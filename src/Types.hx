@@ -1,5 +1,5 @@
-typedef CaseFile = {
-  var name: String;
-  var text: String;
-  var ?image: String;
-};
+typedef RogueInfo = {
+  public var name: String;
+  public var ?hp: Int;
+  public var description: String;
+}

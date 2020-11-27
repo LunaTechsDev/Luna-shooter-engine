@@ -8,4 +8,4 @@
 * Show Pick up Information
 * Any other relevant Information to the player
 * Shows information when mousing over the subject
-* Information display is based on the user tag
+* Information display is based on the user tag [Monster, Item, etc]

@@ -1,7 +1,9 @@
-import rm.managers.SceneManager;
+import utils.Comment;
+import macros.FnMacros;
 import pixi.interaction.EventEmitter;
 import core.Amaryllis;
 import rm.Globals;
+import rm.scenes.Scene_Map as RmSceneMap;
 
 using Lambda;
 using core.StringExtensions;
@@ -26,6 +28,9 @@ class Main {
       backgroundImageName: plugin.parameters['backgroundImageName'],
       caseFileFontSize: Fn.parseIntJs(plugin.parameters['caseFileFontSize'])
     }
+
+    Comment.title('Scene_Map');
+    FnMacros.jsPatch(true, RmSceneMap, SceneMap);
   }
 
   public static function params() {

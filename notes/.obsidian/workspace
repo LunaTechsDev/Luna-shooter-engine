@@ -10,8 +10,8 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Rogue Info Window.md",
-            "mode": "source"
+            "file": "Rogue Entities.md",
+            "mode": "preview"
           }
         }
       }
@@ -69,12 +69,12 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rogue Info Window.md",
+                "file": "Rogue Entities.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "backlinkCollapsed": false,
-                "unlinkedCollapsed": true
+                "unlinkedCollapsed": false
               }
             }
           }
@@ -82,13 +82,13 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "lastOpenFiles": [
-    "Rogue Info Window.md",
+    "Rogue Entities.md",
     "Rogue Engine.md",
-    "Untitled 1.md",
-    "Untitled.md"
+    "Rogue Info Window.md",
+    "Untitled.md",
+    "Untitled 1.md"
   ]
 }
