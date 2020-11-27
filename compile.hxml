@@ -32,16 +32,13 @@
 --each
 
 --next
--js dist/Luna_CaseFiles.js
-
---next
--D ChaosMode
--js dist/Luna_CaseFilesChaosMode.js
+-js dist/Luna_RogueEngine.js
 
 --next 
 -D compileMV
--js dist/Luna_CaseFilesMV.js
+-js dist/Luna_RogueEngineMV.js
 
 
+--cmd 'npx napkin'
 --cmd haxe -D gamePath=../games/LunaTechsMZ --run CleanJs
 

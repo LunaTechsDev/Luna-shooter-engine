@@ -1,0 +1,94 @@
+{
+  "main": {
+    "id": "86de852e20b51e63",
+    "type": "split",
+    "children": [
+      {
+        "id": "9225c7961b8b6912",
+        "type": "leaf",
+        "active": true,
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Rogue Info Window.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b39a643741ba85f6",
+    "type": "split",
+    "children": [
+      {
+        "id": "7e154e284e888350",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "47049f93ce5b37dc",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "c0c24931b5954363",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "ea141e341dbd0ed2",
+    "type": "split",
+    "children": [
+      {
+        "id": "67fc9e7527416131",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "eccd37712df50b1e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Rogue Info Window.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "lastOpenFiles": [
+    "Rogue Info Window.md",
+    "Rogue Engine.md",
+    "Untitled 1.md",
+    "Untitled.md"
+  ]
+}
