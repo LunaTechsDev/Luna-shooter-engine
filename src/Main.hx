@@ -14,14 +14,14 @@ typedef LParams = {
   var caseFileFontSize: Int;
 }
 
-@:native('LunaCaseFiles')
-@:expose('LunaCaseFiles')
+@:native('LunaRogue')
+@:expose('LunaRogue')
 class Main {
   public static var Params: LParams = null;
   public static var listener: EventEmitter = Amaryllis.createEventEmitter();
 
   public static function main() {
-    var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaCaseFiles>/ig.match(plugin.description))[0];
+    var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaRogueEngine>/ig.match(plugin.description))[0];
     Params = {
       backgroundImageName: plugin.parameters['backgroundImageName'],
       caseFileFontSize: Fn.parseIntJs(plugin.parameters['caseFileFontSize'])
@@ -30,9 +30,5 @@ class Main {
 
   public static function params() {
     return Params;
-  }
-
-  public static function gotoCaseFileScene() {
-    SceneManager.push(SceneCaseFiles);
   }
 }

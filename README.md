@@ -1,3 +1,3 @@
-# Luna Case Files  
+# Luna Rogue Engine   
 ### Author LunaTechs - Kino
-> An RPGMakerMV/MZ plugin that allows you to create Case File Scene in your game.
+> An RPGMakerMV/MZ plugin that adds Rogue-Like Elements to your game.

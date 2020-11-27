@@ -1,6 +1,6 @@
 /*:
 @author LunaTechs - Kino
-@plugindesc A plugin that allows items to be used as case files in your game <LunaCaseFiles>.
+@plugindesc A plugin that adds simple rogue lite support to RPGMakerMV/MZ <LunaRogueEngine>.
 
 @target MV MZ
 
