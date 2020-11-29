@@ -1,3 +1,3 @@
-# Luna Rogue Engine   
+# Luna Social System    
 ### Author LunaTechs - Kino
-> An RPGMakerMV/MZ plugin that adds Rogue-Like Elements to your game.
+> An RPGMakerMV/MZ plugin that adds a social system to your game.

@@ -32,11 +32,11 @@
 --each
 
 --next
--js dist/Luna_RogueEngine.js
+-js dist/Luna_SocialSystem.js
 
 --next 
 -D compileMV
--js dist/Luna_RogueEngineMV.js
+-js dist/Luna_SocialSystemMV.js
 
 
 --cmd 'npx napkin'

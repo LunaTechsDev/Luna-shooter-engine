@@ -1,27 +1,56 @@
 /*:
 @author LunaTechs - Kino
-@plugindesc A plugin that adds simple rogue lite support to RPGMakerMV/MZ <LunaRogueEngine>.
+@plugindesc A plugin that adds a social system to RPGMakerMV/MZ <LunaSocialSys>.
 
 @target MV MZ
 
 
+@param socialSystemTitle
+@text Social System Title
+@desc The title text in the social system scene.
+@default Contact Book
 
-@param backgroundImageName
-@text Background Image Name
-@desc Background image name fromyour picture folders
 
-@param caseFileFontSize
-@text Case File Font Size
-@desc The font size used for the case file information window
-@default 14
+@param backgroundPicture
+@text Background Picture
+@desc The name of the background image in the social system scene.
+@default Translucent
+
+@param maxColumns
+@text Max Columns
+@desc The number of columns in the map list window.
+@default 2
+
+@param gaugeHeight
+@text Gauge Height
+@desc The height of the gauge in the social system scenes.
+@default 35
+
+@param gaugeColor1
+@text GaugeColor1
+@desc Color of the gauge when someone likes you; uses window text colors.
+@default 3
+
+@param gaugeColor2
+@text GaugeColor2
+@desc Second color of the gauge when someone likes you; uses window text colors.
+@default 27
+
+@param negativeGaugeColor1
+@text Negative Gauge Color 2
+@desc The color of the gauge when someone dislikes you.
+@default
+
+@param negativeGaugeColor2
+@text Negative Gauge Color 2
+@desc Second color of the gauge when someone dislikes you.
+@default
 
 @help
 ==== How To Use ====
 
 To use it, use the below notetag in item notebox to qualify that item as a case file.
-<LNCFile>
- text information
-</LNCFile>
+
 
 Add the case file note tag to an item in the database to have it appear
 in the case file screen.
