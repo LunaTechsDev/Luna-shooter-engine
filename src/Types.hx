@@ -14,3 +14,13 @@ typedef RogueInfo = {
   public var ?hp: Int;
   public var description: String;
 }
+
+typedef Contact = {
+  public var characterName: String;
+  public var characterIndex: Int;
+  public var id: Int;
+  public var name: String;
+  public var description: String;
+  public var longDescription: String;
+  public var socialRate: Float;
+}

@@ -12,6 +12,12 @@ class SceneMap extends RmSceneMap {
     untyped _Scene_Map_initialize.call(this);
   }
 
+  public override function onMapLoaded() {
+    // super.onMapLoaded();
+    untyped _Scene_Map_onMapLoaded.call(this);
+    // Add Contacts to List
+  }
+
   public override function start() {
     untyped _Scene_Map_start.call(this);
   }

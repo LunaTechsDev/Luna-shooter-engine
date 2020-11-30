@@ -5,6 +5,7 @@ import pixi.interaction.EventEmitter;
 import core.Amaryllis;
 import rm.Globals;
 import rm.scenes.Scene_Map as RmSceneMap;
+import rm.managers.DataManager as RmDataManager;
 
 using Lambda;
 using core.StringExtensions;
@@ -34,9 +35,28 @@ class Main {
 
     Comment.title('Scene_Map');
     FnMacros.jsPatch(true, RmSceneMap, SceneMap);
+
+    Comment.title('DataManager');
+    FnMacros.jsPatch(false, RmDataManager, DataManager);
   }
 
   public static function params() {
     return Params;
   }
+
+  public static function setContactDescription(contactName: String, desc: String) {}
+
+  public static function getContactDescription(contactName: String): String {
+    return '';
+  }
+
+  public static function setContactSocialRate(contactName: String, rate: Float) {}
+
+  public static function updateContactSocialRate(contactName: String, value: Float) {}
+
+  public static function getContactSocialRate(contactName: String): Float {
+    return 0;
+  }
+
+  public static function startSocialSystemScene() {}
 }

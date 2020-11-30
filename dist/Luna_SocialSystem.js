@@ -2,7 +2,7 @@
 // Luna_SocialSystem.js
 //=============================================================================
 //=============================================================================
-// Build Date: 2020-11-29 17:37:50
+// Build Date: 2020-11-29 19:55:07
 //=============================================================================
 //=============================================================================
 // Made with LunaTea -- Haxe
@@ -70,15 +70,27 @@
 @help
 ==== How To Use ====
 
-To use it, use the below notetag in item notebox to qualify that item as a case file.
+ Note: contactId is the same as the eventId on that map.
+ 
+ LunaSocialSys.setContactDescription(contactName, description)
+  - Update/change the contact description you entered.
+  
+ LunaSocialSys.getContactDescription(contactName)
+  - Returns the contact description (can store in a game variable).
+  
+ LunaSocialSys.setContactSocialRate(contactName, rate) 
+ - Adjusts the socialMeter 0 - 100
+ 
+ LunaSocialSys.updateContactSocialRate(contactName, value)
+ - Add/Subtract the social rate by some value (converted to decimal).
+ - You can enter negative or positive numbers.
+    
+ LunaSocialSys.getContactSocialRate(contactName)
+ - Returns the contact social rate (can store this in a game variable).
+  Note: It will be between 0 - 100 it won't be in decimal format.
 
-
-Add the case file note tag to an item in the database to have it appear
-in the case file screen.
-
-How to Call the scene?
-LunaCaseFiles.gotoCaseFileScene()
-
+ LunaSocialSys.startSocialSystemScene()
+  - Starts the social System scene.
 MIT License
 Copyright (c) 2020 LunaTechsDev
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -104,6 +116,9 @@ SOFTWARE
       return js_Boot.__string_rec(this, "");
     },
     $hxEnums = $hxEnums || {}
+  class DMManager extends DataManager {}
+
+  DMManager.__name__ = true
   class EReg {
     constructor(r, opt) {
       this.r = new RegExp(r, opt.split("u").join(""))
@@ -156,14 +171,43 @@ SOFTWARE
       Scene_Map.prototype.initialize = function () {
         _Scene_Map_initialize.call(this)
       }
+      let _Scene_Map_onMapLoaded = Scene_Map.prototype.onMapLoaded
+      Scene_Map.prototype.onMapLoaded = function () {
+        _Scene_Map_onMapLoaded.call(this)
+      }
       let _Scene_Map_start = Scene_Map.prototype.start
       Scene_Map.prototype.start = function () {
         _Scene_Map_start.call(this)
+      }
+
+      //=============================================================================
+      // DataManager
+      //=============================================================================
+      let _DataManager_makeSaveContents = DataManager.makeSaveContents
+      DataManager.makeSaveContents = function () {
+        let contents = {}
+        contents = _DataManager_makeSaveContents.call(this)
+        contents.allMapContacts = {}
+        return contents;
+      }
+      let _DataManager_extractSaveContents = DataManager.extractSaveContents
+      DataManager.extractSaveContents = function (contents) {
+        _DataManager_extractSaveContents.call(this)
       }
     }
     static params() {
       return LunaSocialSys.Params;
     }
+    static setContactDescription(contactName, desc) {}
+    static getContactDescription(contactName) {
+      return "";
+    }
+    static setContactSocialRate(contactName, rate) {}
+    static updateContactSocialRate(contactName, value) {}
+    static getContactSocialRate(contactName) {
+      return 0;
+    }
+    static startSocialSystemScene() {}
   }
 
   $hx_exports["LunaSocialSys"] = LunaSocialSys
@@ -175,6 +219,9 @@ SOFTWARE
     }
     initialize() {
       _Scene_Map_initialize.call(this)
+    }
+    onMapLoaded() {
+      _Scene_Map_onMapLoaded.call(this)
     }
     start() {
       _Scene_Map_start.call(this)

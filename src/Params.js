@@ -49,15 +49,27 @@
 @help
 ==== How To Use ====
 
-To use it, use the below notetag in item notebox to qualify that item as a case file.
+ Note: contactId is the same as the eventId on that map.
+ 
+ LunaSocialSys.setContactDescription(contactName, description)
+  - Update/change the contact description you entered.
+  
+ LunaSocialSys.getContactDescription(contactName)
+  - Returns the contact description (can store in a game variable).
+  
+ LunaSocialSys.setContactSocialRate(contactName, rate) 
+ - Adjusts the socialMeter 0 - 100
+ 
+ LunaSocialSys.updateContactSocialRate(contactName, value)
+ - Add/Subtract the social rate by some value (converted to decimal).
+ - You can enter negative or positive numbers.
+    
+ LunaSocialSys.getContactSocialRate(contactName)
+ - Returns the contact social rate (can store this in a game variable).
+  Note: It will be between 0 - 100; it won't be in decimal format.
 
-
-Add the case file note tag to an item in the database to have it appear
-in the case file screen.
-
-How to Call the scene?
-LunaCaseFiles.gotoCaseFileScene();
-
+ LunaSocialSys.startSocialSystemScene()
+  - Starts the social System scene.
 MIT License
 Copyright (c) 2020 LunaTechsDev
 Permission is hereby granted, free of charge, to any person obtaining a copy
