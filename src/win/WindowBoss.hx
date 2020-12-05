@@ -16,6 +16,10 @@ class WindowBoss extends Window_Base {
     #end
   }
 
+  public function setBoss(boss: Character) {
+    this.boss = boss;
+  }
+
   public function paint() {
     if (this.contents != null) {
       this.contents.clear();
