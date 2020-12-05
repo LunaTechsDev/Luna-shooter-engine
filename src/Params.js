@@ -16,35 +16,7 @@
 @desc The name of the background image in the social system scene.
 @default Translucent
 
-@param maxColumns
-@text Max Columns
-@desc The number of columns in the map list window.
-@default 2
 
-@param gaugeHeight
-@text Gauge Height
-@desc The height of the gauge in the social system scenes.
-@default 35
-
-@param gaugeColor1
-@text GaugeColor1
-@desc Color of the gauge when someone likes you; uses window text colors.
-@default 3
-
-@param gaugeColor2
-@text GaugeColor2
-@desc Second color of the gauge when someone likes you; uses window text colors.
-@default 27
-
-@param negativeGaugeColor1
-@text Negative Gauge Color 2
-@desc The color of the gauge when someone dislikes you.
-@default
-
-@param negativeGaugeColor2
-@text Negative Gauge Color 2
-@desc Second color of the gauge when someone dislikes you.
-@default
 
 @help
 ==== How To Use ====

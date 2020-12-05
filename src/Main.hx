@@ -1,3 +1,5 @@
+import Types.Contact;
+import rm.managers.SceneManager;
 import Types.Param;
 import utils.Comment;
 import macros.FnMacros;
@@ -13,14 +15,15 @@ using core.NumberExtensions;
 using StringTools;
 using utils.Fn;
 
-@:native('LunaSocialSys')
-@:expose('LunaSocialSys')
+@:native('LunaShooter')
+@:expose('LunaShooter')
 class Main {
   public static var Params: Param = null;
   public static var listener: EventEmitter = Amaryllis.createEventEmitter();
+  public static var _currentContact: Contact;
 
   public static function main() {
-    var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaSocialSys>/ig.match(plugin.description))[0];
+    var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaShooter>/ig.match(plugin.description))[0];
     var params = plugin.parameters;
     Params = {
       socialSystemTitle: params['socialSystemTitle'],
@@ -43,20 +46,4 @@ class Main {
   public static function params() {
     return Params;
   }
-
-  public static function setContactDescription(contactName: String, desc: String) {}
-
-  public static function getContactDescription(contactName: String): String {
-    return '';
-  }
-
-  public static function setContactSocialRate(contactName: String, rate: Float) {}
-
-  public static function updateContactSocialRate(contactName: String, value: Float) {}
-
-  public static function getContactSocialRate(contactName: String): Float {
-    return 0;
-  }
-
-  public static function startSocialSystemScene() {}
 }
