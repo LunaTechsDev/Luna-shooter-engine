@@ -1,3 +1,3 @@
-# Luna Social System    
+# Luna Shooter Engine    
 ### Author LunaTechs - Kino
-> An RPGMakerMV/MZ plugin that adds a social system to your game.
+> An RPGMakerMV/MZ plugin that adds a shoot em-up style mini game to your game.
