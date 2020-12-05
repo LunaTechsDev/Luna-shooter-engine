@@ -5,10 +5,10 @@
 @target MV MZ
 
 
-@param socialSystemTitle
-@text Social System Title
-@desc The title text in the social system scene.
-@default Contact Book
+@param hpColor
+@text  Hp Color
+@desc The color of the HP gauges(css color)
+@default B33951 
 
 
 @param backgroundPicture
