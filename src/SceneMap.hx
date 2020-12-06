@@ -1,6 +1,5 @@
 import rm.Globals;
 import rm.objects.Game_Event;
-import Types.RogueInfo;
 import Events.WinEvents;
 import rm.scenes.Scene_Map as RmSceneMap;
 

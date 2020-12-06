@@ -66,11 +66,11 @@ class CleanJs {
 
       final newContent = fileNameStr + buildDate + madeWithStr + attributionStr + "\n" + cleanContents;
       // final newContent = cleanContents;
-      File.write(filePath).writeString(newContent);
+      File.write(filePath).writeString(contents);
       var gamePath: String = generatePluginGamePath();
       trace(gamePath);
       if (gamePath.length > 0) {
-        File.write(generatePluginGamePath() + file).writeString(newContent);
+        File.write(generatePluginGamePath() + file).writeString(contents);
         trace("Wrote File to Game Path");
       }
       trace("Cleaned Output File: " + filePath);

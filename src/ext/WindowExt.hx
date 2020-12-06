@@ -1,6 +1,5 @@
 package ext;
 
-import Types.Param;
 import rm.windows.Window_Base;
 
 class WindowExt {

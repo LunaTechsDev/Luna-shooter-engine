@@ -1,6 +1,6 @@
 /*:
 @author LunaTechs - Kino
-@plugindesc A plugin that adds a social system to RPGMakerMV/MZ <LunaSocialSys>.
+@plugindesc A plugin that adds a social system to RPGMakerMV/MZ <LunaShooter>.
 
 @target MV MZ
 

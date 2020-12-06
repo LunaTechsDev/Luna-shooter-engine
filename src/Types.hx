@@ -3,6 +3,11 @@ typedef Param = {
   public var hpColor: String;
 }
 
+typedef Position = {
+  public var x: Float;
+  public var y: Float;
+}
+
 typedef Character = {
   public var hp: Int;
   public var maxHp: Int;

@@ -1,5 +1,6 @@
 package core;
 
+import rm.scenes.Scene_Base;
 import pixi.interaction.EventEmitter;
 
 /**
@@ -7,6 +8,8 @@ import pixi.interaction.EventEmitter;
  */
 @:native('Scriptable')
 class Scriptable extends EventEmitter {
+  public var scene: Scene_Base;
+
   public function initialize() {
     this.emit(INIT);
   }
@@ -17,6 +20,5 @@ class Scriptable extends EventEmitter {
 
   public function destroy() {
     this.emit(DESTROY);
-    this = null;
   }
 }
