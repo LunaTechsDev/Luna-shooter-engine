@@ -437,10 +437,25 @@ SOFTWARE
     createEnemies() {}
     create() {
       super.create();
+      this.createBackground();
+      this.createWindowLayer();
       this.createAllWindows();
     }
-    createBackground() {}
-    createAllWindows() {}
+    createBackground() {
+      this.backgroundSprite = new Sprite();
+      let bitmap = ImageManager.loadPicture(
+        LunaShooter.Params.backgroundPicture
+      );
+      let _gthis = this;
+      bitmap.addLoadListener(function (bitmap) {
+        _gthis.backgroundSprite.bitmap = bitmap;
+        _gthis.addChildAt(_gthis.backgroundSprite, 0);
+      });
+    }
+    createAllWindows() {
+      this.bossWindow = new win_WindowBoss(0, 0, Graphics.boxWidth, 75);
+      this.addWindow(this.bossWindow);
+    }
     update() {
       this.deltaTime = (SceneShooter.performance.now() - this.timeStamp) / 1000;
       super.update();
@@ -454,6 +469,14 @@ SOFTWARE
 
   $hx_exports["SceneShooter"] = SceneShooter;
   SceneShooter.__name__ = true;
+  class win_WindowBoss extends Window_Base {
+    constructor(x, y, width, height) {
+      let rect = new Rectangle(x, y, width, height);
+      super(rect);
+    }
+  }
+
+  win_WindowBoss.__name__ = true;
   function $getIterator(o) {
     if (o instanceof Array) return new haxe_iterators_ArrayIterator(o);
     else return o.iterator();
