@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/5/2020
+ *  Build Date: 12/6/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -230,6 +230,7 @@ SOFTWARE
     update(deltaTime) {
       super.update(deltaTime);
       this.processMovement(deltaTime);
+      this.processBoundingBox();
       this.processCollider();
       this.processSprite();
     }
@@ -253,6 +254,16 @@ SOFTWARE
       let pos = this.pos;
       pos.x += xMove;
       pos.y += yMove;
+    }
+    processBoundingBox() {
+      this.pos.x = Math.min(
+        Math.max(this.pos.x, 0),
+        Graphics.boxWidth - this.collider.width
+      );
+      this.pos.y = Math.min(
+        Math.max(this.pos.y, 0),
+        Graphics.boxHeight - this.collider.height
+      );
     }
     processCollider() {
       this.collider.x = this.pos.x;

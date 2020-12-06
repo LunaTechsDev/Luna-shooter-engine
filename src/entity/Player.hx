@@ -1,5 +1,6 @@
 package entity;
 
+import rm.core.Graphics;
 import core.Collider;
 import rm.scenes.Scene_Base;
 import rm.core.Bitmap;
@@ -38,8 +39,8 @@ class Player extends Scriptable {
 
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
-
     this.processMovement(deltaTime);
+    this.processBoundingBox();
     this.processCollider();
     this.processSprite();
   }
@@ -66,6 +67,12 @@ class Player extends Scriptable {
     var xMove = this.dir.x * this.speed * deltaTime;
     var yMove = this.dir.y * this.speed * deltaTime;
     this.pos.moveBy(xMove, yMove);
+  }
+
+  public function processBoundingBox() {
+    // Cannot go outside of Graphic.boxHeight/Width
+    this.pos.x = this.pos.x.clampf(0, Graphics.boxWidth - this.collider.width);
+    this.pos.y = this.pos.y.clampf(0, Graphics.boxHeight - this.collider.height);
   }
 
   public function processCollider() {
