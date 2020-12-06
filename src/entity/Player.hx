@@ -1,5 +1,6 @@
 package entity;
 
+import spr.SpriteGauge.SpriteGauage;
 import rm.core.Graphics;
 import core.Collider;
 import rm.scenes.Scene_Base;
@@ -10,6 +11,7 @@ import core.Scriptable;
 import Types.Character;
 
 using ext.PositionExt;
+using ext.CharacterExt;
 
 class Player extends Scriptable {
   public var player: Character;
@@ -18,6 +20,7 @@ class Player extends Scriptable {
   public var speed: Int;
   public var dir: {x: Int, y: Int};
   public var collider: Collider;
+  public var hpGauge: SpriteGauage;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
     super();
@@ -28,6 +31,8 @@ class Player extends Scriptable {
     playerImage.addLoadListener((bitmap: Bitmap) -> {
       this.sprite = new Sprite(bitmap);
       this.collider = new Collider(this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      this.hpGauge = new SpriteGauage(0, 0, cast bitmap.width, 12);
+      this.sprite.addChild(this.hpGauge);
     });
   }
 
@@ -39,6 +44,7 @@ class Player extends Scriptable {
 
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
+    this.hpGauge.updateGauge(this.player.hpRate());
     this.processMovement(deltaTime);
     this.processBoundingBox();
     this.processCollider();

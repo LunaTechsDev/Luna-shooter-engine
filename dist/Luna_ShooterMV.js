@@ -220,6 +220,8 @@ SOFTWARE
           bitmap.width,
           bitmap.height
         );
+        _gthis.hpGauge = new spr_SpriteGauage(0, 0, bitmap.width, 12);
+        _gthis.sprite.addChild(_gthis.hpGauge);
       });
     }
     initialize() {
@@ -229,6 +231,8 @@ SOFTWARE
     }
     update(deltaTime) {
       super.update(deltaTime);
+      let char = this.player;
+      this.hpGauge.updateGauge(char.hp / char.maxHp);
       this.processMovement(deltaTime);
       this.processBoundingBox();
       this.processCollider();
@@ -469,6 +473,38 @@ SOFTWARE
 
   $hx_exports["SceneShooter"] = SceneShooter;
   SceneShooter.__name__ = true;
+  class spr_SpriteGauage extends Sprite {
+    constructor(x, y, width, height) {
+      super(null);
+      let bitmap = new Bitmap(width, height);
+      this.bitmap = bitmap;
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+    }
+    update() {
+      super.update();
+    }
+    updateGauge(hpRate) {
+      this.paintGauge(hpRate);
+    }
+    paintGauge(rate) {
+      let contents = this.bitmap;
+      let fillW = Math.floor(this.width * rate);
+      contents.fillRect(this.x, 0, this.width, this.height, "black");
+      contents.gradientFillRect(
+        this.x,
+        0,
+        fillW,
+        this.height,
+        LunaShooter.Params.hpColor,
+        LunaShooter.Params.hpColor
+      );
+    }
+  }
+
+  spr_SpriteGauage.__name__ = true;
   class win_WindowBoss extends Window_Base {
     constructor(x, y, width, height) {
       super(x, y, width, height);
