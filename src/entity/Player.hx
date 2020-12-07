@@ -1,37 +1,28 @@
 package entity;
 
-import spr.SpriteGauge.SpriteGauage;
 import rm.core.Graphics;
-import core.Collider;
-import rm.scenes.Scene_Base;
-import rm.core.Bitmap;
 import rm.core.Input;
-import rm.core.Sprite;
-import core.Scriptable;
 import Types.Character;
 
 using ext.PositionExt;
 using ext.CharacterExt;
 
-class Player extends Scriptable {
+class Player extends Node2D {
   public var player: Character;
   public var sprite: Sprite;
-  public var pos: Position;
   public var speed: Int;
   public var dir: {x: Int, y: Int};
   public var collider: Collider;
-  public var hpGauge: SpriteGauage;
+  public var hpGauge: SpriteGauge;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
-    super();
-    this.pos = { x: 0, y: 0 };
-    this.pos.x = posX;
-    this.pos.y = posY;
+    super(posX, posY);
+
     this.player = characterData;
     playerImage.addLoadListener((bitmap: Bitmap) -> {
       this.sprite = new Sprite(bitmap);
       this.collider = new Collider(this.pos.x, this.pos.y, bitmap.width, bitmap.height);
-      this.hpGauge = new SpriteGauage(0, 0, cast bitmap.width, 12);
+      this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
       this.sprite.addChild(this.hpGauge);
     });
   }
@@ -93,5 +84,6 @@ class Player extends Scriptable {
 
   public override function destroy() {
     super.destroy();
+    this.sprite.hide();
   }
 }

@@ -70,16 +70,29 @@ class SceneShooter extends Scene_Base {
   }
 
   public function createAllWindows() {
+    this.createBossWindow();
+  }
+
+  public function createBossWindow() {
     this.bossWindow = new WindowBoss(0, 0, cast Graphics.boxWidth, 75);
     this.addWindow(this.bossWindow);
+    this.bossWindow.hide();
   }
 
   public override function update() {
     this.deltaTime = (performance.now() - timeStamp) / 1000;
     super.update();
+    this.updateScriptables();
+    timeStamp = performance.now();
+  }
+
+  public function updateScriptables() {
     scriptables.iter((scriptable) -> {
       scriptable.update(deltaTime);
     });
-    timeStamp = performance.now();
+  }
+
+  public function updateBossWindow() {
+    if (this.bossWindow.boss == null) {}
   }
 }

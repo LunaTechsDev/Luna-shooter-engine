@@ -457,18 +457,26 @@ SOFTWARE
       });
     }
     createAllWindows() {
+      this.createBossWindow();
+    }
+    createBossWindow() {
       this.bossWindow = new win_WindowBoss(0, 0, Graphics.boxWidth, 75);
       this.addWindow(this.bossWindow);
+      this.bossWindow.hide();
     }
     update() {
       this.deltaTime = (SceneShooter.performance.now() - this.timeStamp) / 1000;
       super.update();
+      this.updateScriptables();
+      this.timeStamp = SceneShooter.performance.now();
+    }
+    updateScriptables() {
       let _gthis = this;
       Lambda.iter(this.scriptables, function (scriptable) {
         scriptable.update(_gthis.deltaTime);
       });
-      this.timeStamp = SceneShooter.performance.now();
     }
+    updateBossWindow() {}
   }
 
   $hx_exports["SceneShooter"] = SceneShooter;

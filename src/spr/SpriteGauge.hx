@@ -3,7 +3,7 @@ package spr;
 import rm.core.Bitmap;
 import rm.core.Sprite;
 
-class SpriteGauage extends Sprite {
+class SpriteGauge extends Sprite {
   public function new(x: Int, y: Int, width: Int, height: Int) {
     super(null);
     var bitmap = new Bitmap(width, height);
