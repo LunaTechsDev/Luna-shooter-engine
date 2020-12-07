@@ -10,6 +10,10 @@ import pixi.interaction.EventEmitter;
 class Scriptable extends EventEmitter {
   public var scene: Scene_Base;
 
+  public function new() {
+    super();
+  }
+
   public function initialize() {
     this.emit(INIT);
   }

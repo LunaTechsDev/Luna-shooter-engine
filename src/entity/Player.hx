@@ -1,5 +1,8 @@
 package entity;
 
+import rm.core.Sprite;
+import rm.scenes.Scene_Base;
+import rm.managers.SceneManager;
 import rm.core.Graphics;
 import rm.core.Input;
 import Types.Character;
@@ -14,12 +17,22 @@ class Player extends Node2D {
   public var dir: {x: Int, y: Int};
   public var collider: Collider;
   public var hpGauge: SpriteGauge;
+  public var playerImg: Bitmap;
+  public var bulletList: Array<Bullet>;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
     super(posX, posY);
-
     this.player = characterData;
-    playerImage.addLoadListener((bitmap: Bitmap) -> {
+    this.playerImg = playerImage;
+    this.initialize();
+  }
+
+  public override function initialize() {
+    super.initialize();
+    this.bulletList = [];
+    this.speed = 400;
+    this.dir = { x: 0, y: 0 };
+    this.playerImg.addLoadListener((bitmap: Bitmap) -> {
       this.sprite = new Sprite(bitmap);
       this.collider = new Collider(this.pos.x, this.pos.y, bitmap.width, bitmap.height);
       this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
@@ -27,19 +40,40 @@ class Player extends Node2D {
     });
   }
 
-  public override function initialize() {
-    super.initialize();
-    this.speed = 400;
-    this.dir = { x: 0, y: 0 };
-  }
-
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
     this.hpGauge.updateGauge(this.player.hpRate());
+    // TODO: If marked not visible -- remove it from the bullet list
+    this.bulletList.iter((bullet) -> {
+      bullet.update(deltaTime);
+      if (bullet.sprite.visible == false) {
+        var scene: Scene_Base = SceneManager.currentScene;
+        scene.removeChild(bullet.sprite);
+        bullet = null;
+      }
+    });
+
+    this.processFiring();
     this.processMovement(deltaTime);
     this.processBoundingBox();
     this.processCollider();
     this.processSprite();
+  }
+
+  public function processFiring() {
+    if (Input.isTriggered(OK)) {
+      var yOffset = 12;
+      var bulletImg = new Bitmap(4, 4);
+      bulletImg.fillRect(0, 0, 4, 4, 'white');
+
+      var bullet = new Bullet(cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
+
+      var scene: Scene_Base = SceneManager.currentScene;
+      scene.addChild(bullet.sprite);
+
+      this.bulletList.push(bullet);
+      bullet.fire({ x: 0, y: -1 });
+    }
   }
 
   public function processMovement(deltaTime: Float) {
@@ -84,6 +118,6 @@ class Player extends Node2D {
 
   public override function destroy() {
     super.destroy();
-    this.sprite.hide();
+    this.sprite.visible = false;
   }
 }

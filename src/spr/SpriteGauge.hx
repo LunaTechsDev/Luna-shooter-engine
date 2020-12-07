@@ -5,7 +5,7 @@ import rm.core.Sprite;
 
 class SpriteGauge extends Sprite {
   public function new(x: Int, y: Int, width: Int, height: Int) {
-    super(null);
+    super();
     var bitmap = new Bitmap(width, height);
     this.bitmap = bitmap;
     this.x = x;

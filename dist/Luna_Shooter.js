@@ -1,6 +1,6 @@
 /** ============================================================================
  *
- *  Luna_ShooterMV.js
+ *  Luna_Shooter.js
  * 
  *  Build Date: 12/6/2020
  * 
@@ -612,7 +612,8 @@ SOFTWARE
   spr_SpriteGauge.__name__ = true;
   class win_WindowBoss extends Window_Base {
     constructor(x, y, width, height) {
-      super(x, y, width, height);
+      let rect = new Rectangle(x, y, width, height);
+      super(rect);
     }
   }
 
@@ -638,4 +639,4 @@ SOFTWARE
   {}
 );
 
-//# sourceMappingURL=Luna_ShooterMV.js.map
+//# sourceMappingURL=Luna_Shooter.js.map

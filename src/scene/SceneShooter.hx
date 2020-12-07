@@ -25,9 +25,6 @@ class SceneShooter extends Scene_Base {
     this.timeStamp = performance.now();
     this.scriptables = [];
     this.createScriptables();
-    this.scriptables.iter((scriptable) -> {
-      scriptable.initialize();
-    });
   }
 
   public function createScriptables() {
@@ -47,6 +44,7 @@ class SceneShooter extends Scene_Base {
     var playerImage = new Bitmap(100, 100);
     playerImage.fillRect(0, 0, 100, 100, 'white');
     var player = new entity.Player(100, 100, playerData, playerImage);
+
     this.addChild(player.sprite);
     this.scriptables.push(player);
   }
