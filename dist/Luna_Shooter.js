@@ -2,7 +2,7 @@
  *
  *  Luna_Shooter.js
  * 
- *  Build Date: 12/6/2020
+ *  Build Date: 12/7/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -96,6 +96,21 @@ SOFTWARE
   }
 
   EReg.__name__ = true;
+  class HxOverrides {
+    static remove(a, obj) {
+      let i = a.indexOf(obj);
+      if (i == -1) {
+        return false;
+      }
+      a.splice(i, 1);
+      return true;
+    }
+    static now() {
+      return Date.now();
+    }
+  }
+
+  HxOverrides.__name__ = true;
   class Lambda {
     static iter(it, f) {
       let x = $getIterator(it);
@@ -104,9 +119,74 @@ SOFTWARE
         f(x1);
       }
     }
+    static findIndex(it, f) {
+      let i = 0;
+      let v = $getIterator(it);
+      while (v.hasNext()) {
+        let v1 = v.next();
+        if (f(v1)) {
+          return i;
+        }
+        ++i;
+      }
+      return -1;
+    }
   }
 
   Lambda.__name__ = true;
+  class systems_CollisionSystem {
+    static initialize() {
+      systems_CollisionSystem.colliderIds.length = 100;
+      Lambda.iter(systems_CollisionSystem.colliderIds, function (el) {});
+    }
+    static generateId() {
+      let id = Lambda.findIndex(
+        systems_CollisionSystem.colliderIds,
+        function (el) {
+          return el == null;
+        }
+      );
+      if (id == -1) {
+        systems_CollisionSystem.colliderIds.push(
+          systems_CollisionSystem.colliderIds.length + 1
+        );
+        id = systems_CollisionSystem.colliderIds.length + 1;
+      } else {
+        systems_CollisionSystem.colliderIds[id] = id;
+      }
+      return id;
+    }
+    static addCollider(collider) {
+      systems_CollisionSystem.colliders.push(collider);
+      collider.id = systems_CollisionSystem.generateId();
+    }
+    static removeCollider(collider) {
+      systems_CollisionSystem.colliderIds[collider.id] = null;
+      HxOverrides.remove(systems_CollisionSystem.colliders, collider);
+    }
+    static update() {
+      Lambda.iter(systems_CollisionSystem.colliders, function (collider) {
+        let _this = systems_CollisionSystem.colliders;
+        let _g = [];
+        let _g1 = 0;
+        while (_g1 < _this.length) {
+          let v = _this[_g1];
+          ++_g1;
+          if (collider.isCollided(v) && collider.id != v.id) {
+            _g.push(v);
+          }
+        }
+        let _g2 = 0;
+        while (_g2 < _g.length) {
+          let collision = _g[_g2];
+          ++_g2;
+          collider.addCollision(collision);
+        }
+      });
+    }
+  }
+
+  systems_CollisionSystem.__name__ = true;
   class LunaShooter {
     static main() {
       let _g = [];
@@ -185,8 +265,34 @@ SOFTWARE
 
   SceneMap.__name__ = true;
   class core_Collider extends Rectangle {
-    constructor(x, y, width, height) {
+    constructor(layer, x, y, width, height) {
       super(x, y, width, height);
+      this.layer = layer;
+      this.collisions = [];
+    }
+    isCollided(collider) {
+      let topLeft_x = this.x;
+      let topLeft_y = this.y;
+      let bottomLeft_x = this.x;
+      let bottomLeft_y = this.y + this.height;
+      let topRight_x = this.x + this.width;
+      let topRight_y = this.x;
+      let bottomRight_x = this.x + this.width;
+      let bottomRight_y = this.y + this.height;
+      if (
+        !(
+          collider.contains(topLeft_x, topLeft_y) ||
+          collider.contains(bottomLeft_x, bottomLeft_y) ||
+          collider.contains(topRight_x, topRight_y)
+        )
+      ) {
+        return collider.contains(bottomRight_x, bottomRight_y);
+      } else {
+        return true;
+      }
+    }
+    addCollision(collision) {
+      this.collisions.push(collision);
     }
   }
 
@@ -231,11 +337,13 @@ SOFTWARE
       this.bulletImage.addLoadListener(function (bitmap) {
         _gthis.sprite = new Sprite(bitmap);
         _gthis.collider = new core_Collider(
+          "bullet",
           _gthis.pos.x,
           _gthis.pos.y,
           bitmap.width,
           bitmap.height
         );
+        systems_CollisionSystem.addCollider(_gthis.collider);
       });
     }
     fire(direction) {
@@ -275,6 +383,7 @@ SOFTWARE
     }
     destroy() {
       super.destroy();
+      systems_CollisionSystem.removeCollider(this.collider);
       this.sprite.visible = false;
     }
   }
@@ -296,11 +405,13 @@ SOFTWARE
       this.playerImg.addLoadListener(function (bitmap) {
         _gthis.sprite = new Sprite(bitmap);
         _gthis.collider = new core_Collider(
+          "player",
           _gthis.pos.x,
           _gthis.pos.y,
           bitmap.width,
           bitmap.height
         );
+        systems_CollisionSystem.addCollider(_gthis.collider);
         _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
         _gthis.sprite.addChild(_gthis.hpGauge);
       });
@@ -514,6 +625,7 @@ SOFTWARE
       super.initialize();
       this.timeStamp = SceneShooter.performance.now();
       this.scriptables = [];
+      systems_CollisionSystem.initialize();
       this.createScriptables();
     }
     createScriptables() {
@@ -565,6 +677,7 @@ SOFTWARE
       this.deltaTime = (SceneShooter.performance.now() - this.timeStamp) / 1000;
       super.update();
       this.updateScriptables();
+      systems_CollisionSystem.update();
       this.timeStamp = SceneShooter.performance.now();
     }
     updateScriptables() {
@@ -622,10 +735,20 @@ SOFTWARE
     if (o instanceof Array) return new haxe_iterators_ArrayIterator(o);
     else return o.iterator();
   }
+  if (
+    typeof performance != "undefined"
+      ? typeof performance.now == "function"
+      : false
+  ) {
+    HxOverrides.now = performance.now.bind(performance);
+  }
   String.__name__ = true;
   Array.__name__ = true;
   js_Boot.__toStr = {}.toString;
+  systems_CollisionSystem.colliders = [];
+  systems_CollisionSystem.colliderIds = [];
   LunaShooter.listener = new PIXI.utils.EventEmitter();
+  LunaShooter.collisionSys = systems_CollisionSystem;
   SceneShooter.performance = window.performance;
   LunaShooter.main();
 })(

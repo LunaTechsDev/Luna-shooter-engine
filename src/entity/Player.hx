@@ -34,7 +34,8 @@ class Player extends Node2D {
     this.dir = { x: 0, y: 0 };
     this.playerImg.addLoadListener((bitmap: Bitmap) -> {
       this.sprite = new Sprite(bitmap);
-      this.collider = new Collider(this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      this.collider = new Collider(PLAYER, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      CollisionSystem.addCollider(this.collider);
       this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
       this.sprite.addChild(this.hpGauge);
     });

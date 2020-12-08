@@ -3,8 +3,15 @@ package core;
 import rm.core.Rectangle;
 
 class Collider extends Rectangle {
-  public function new(x: Float, y: Float, width: Float, height: Float) {
+  public var id: Int;
+  public var inCollission: Bool;
+  public var layer: CollisionLayer;
+  public var collisions: Array<Collider>;
+
+  public function new(layer: CollisionLayer, x: Float, y: Float, width: Float, height: Float) {
     super(x, y, width, height);
+    this.layer = layer;
+    this.collisions = [];
   }
 
   public function isCollided(collider: Collider): Bool {
@@ -16,5 +23,9 @@ class Collider extends Rectangle {
       || collider.contains(bottomLeft.x, bottomLeft.y)
       || collider.contains(topRight.x, topRight.y)
       || collider.contains(bottomRight.x, bottomRight.y);
+  }
+
+  public function addCollision(collision: Collider) {
+    this.collisions.push(collision);
   }
 }

@@ -22,7 +22,8 @@ class Bullet extends Node2D {
     this.dir = { x: 0, y: 0 };
     this.bulletImage.addLoadListener((bitmap) -> {
       this.sprite = new Sprite(bitmap);
-      this.collider = new Collider(this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      this.collider = new Collider(BULLET, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      CollisionSystem.addCollider(this.collider);
     });
   }
 
@@ -61,6 +62,7 @@ class Bullet extends Node2D {
 
   public override function destroy() {
     super.destroy();
+    CollisionSystem.removeCollider(this.collider);
     this.sprite.visible = false;
   }
 }

@@ -15,6 +15,7 @@ using utils.Fn;
 class Main {
   public static var Params: Param = null;
   public static var listener: EventEmitter = Amaryllis.createEventEmitter();
+  public static var collisionSys = CollisionSystem;
 
   public static function main() {
     var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaShooter>/ig.match(plugin.description))[0];

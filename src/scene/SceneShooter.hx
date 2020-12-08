@@ -1,5 +1,6 @@
 package scene;
 
+import systems.CollisionSystem;
 import rm.core.Graphics;
 import win.WindowBoss;
 import rm.managers.ImageManager;
@@ -24,6 +25,7 @@ class SceneShooter extends Scene_Base {
     super.initialize();
     this.timeStamp = performance.now();
     this.scriptables = [];
+    CollisionSystem.initialize();
     this.createScriptables();
   }
 
@@ -81,6 +83,7 @@ class SceneShooter extends Scene_Base {
     this.deltaTime = (performance.now() - timeStamp) / 1000;
     super.update();
     this.updateScriptables();
+    CollisionSystem.update();
     timeStamp = performance.now();
   }
 
