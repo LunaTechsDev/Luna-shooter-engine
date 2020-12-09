@@ -6,11 +6,13 @@ class Collider extends Rectangle {
   public var id: Int;
   public var inCollission: Bool;
   public var layer: CollisionLayer;
+  public var isOn: Bool;
   public var collisions: Array<Collider>;
 
   public function new(layer: CollisionLayer, x: Float, y: Float, width: Float, height: Float) {
     super(x, y, width, height);
     this.layer = layer;
+    this.isOn = true;
     this.collisions = [];
   }
 

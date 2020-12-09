@@ -12,7 +12,7 @@ import js.Browser;
 import core.Scriptable;
 import rm.scenes.Scene_Base;
 
-@:native('SceneShooter')
+@:native('LunaSceneShooter')
 @:expose
 class SceneShooter extends Scene_Base {
   public var timeStamp: Float;
@@ -123,7 +123,11 @@ class SceneShooter extends Scene_Base {
     bitmap.clear();
     colliders.iter((collider) -> {
       var borderWidth = 2;
-      bitmap.fillRect(collider.x, collider.y, collider.width, collider.height, 'red');
+      if (collider.isOn) {
+        bitmap.fillRect(collider.x, collider.y, collider.width, collider.height, 'red');
+      } else {
+        bitmap.fillRect(collider.x, collider.y, collider.width, collider.height, 'blue');
+      }
 
       bitmap.clearRect(collider.x
         + borderWidth, collider.y

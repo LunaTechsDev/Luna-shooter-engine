@@ -34,6 +34,7 @@ class ScenePause extends Scene_MenuBase {
     var xPosition = Graphics.boxWidth / 2;
     this.pauseMenuWindow = new WindowPauseMenu(cast xPosition, 120, 150, 250);
     this.pauseMenuWindow.setHandler('resume', untyped this.resumeHandler);
+    this.pauseMenuWindow.setHandler('retry', untyped this.retryHandler);
     this.pauseMenuWindow.setHandler('returnToTitle', untyped this.returnToTitleHandler);
     this.pauseMenuWindow.activate();
     this.addWindow(this.pauseMenuWindow);
@@ -50,6 +51,10 @@ class ScenePause extends Scene_MenuBase {
 
   public function resumeHandler() {
     this.popScene();
+  }
+
+  public function retryHandler() {
+    SceneManager.goto(SceneShooter);
   }
 
   public function returnToTitleHandler() {
