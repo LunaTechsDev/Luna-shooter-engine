@@ -22,6 +22,7 @@ class Main {
     var params = plugin.parameters;
     Params = {
       backgroundPicture: params['backgroundPicture'],
+      debugCollider: params['debugCollider'].toLowerCase() == 'true',
       hpColor: params['hpColor']
     }
 

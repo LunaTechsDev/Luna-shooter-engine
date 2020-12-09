@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/7/2020
+ *  Build Date: 12/8/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -15,6 +15,11 @@
 
 @target MV MZ
 
+
+@param debugCollider
+@text Debug Collider
+@desc Shows the colliders in the game when turned on.
+@default true
 
 @param hpColor
 @text  Hp Color
@@ -162,6 +167,7 @@ SOFTWARE
     }
     static removeCollider(collider) {
       systems_CollisionSystem.colliderIds[collider.id] = null;
+      collider.id = null;
       HxOverrides.remove(systems_CollisionSystem.colliders, collider);
     }
     static update() {
@@ -201,8 +207,10 @@ SOFTWARE
       }
       let plugin = _g[0];
       let params = plugin.parameters;
+      let tmp = params["debugCollider"].toLowerCase() == "true";
       LunaShooter.Params = {
         backgroundPicture: params["backgroundPicture"],
+        debugCollider: tmp,
         hpColor: params["hpColor"],
       };
 
@@ -331,7 +339,7 @@ SOFTWARE
     }
     initialize() {
       super.initialize();
-      this.speed = 400;
+      this.speed = 200;
       this.dir = { x: 0, y: 0 };
       let _gthis = this;
       this.bulletImage.addLoadListener(function (bitmap) {
@@ -354,6 +362,7 @@ SOFTWARE
       super.update(deltaTime);
       this.processMovement(deltaTime);
       this.processSprite();
+      this.processCollider();
       this.processDeletion();
     }
     processMovement(deltaTime) {
@@ -380,6 +389,10 @@ SOFTWARE
       ) {
         this.destroy();
       }
+    }
+    processCollider() {
+      this.collider.x = this.pos.x;
+      this.collider.y = this.pos.y;
     }
     destroy() {
       super.destroy();
@@ -420,6 +433,17 @@ SOFTWARE
       super.update(deltaTime);
       let char = this.player;
       this.hpGauge.updateGauge(char.hp / char.maxHp);
+      let _this = this.bulletList;
+      let _g = [];
+      let _g1 = 0;
+      while (_g1 < _this.length) {
+        let v = _this[_g1];
+        ++_g1;
+        if (v.sprite.visible) {
+          _g.push(v);
+        }
+      }
+      this.bulletList = _g;
       Lambda.iter(this.bulletList, function (bullet) {
         bullet.update(deltaTime);
         if (bullet.sprite.visible == false) {
@@ -436,8 +460,8 @@ SOFTWARE
     }
     processFiring() {
       if (Input.isTriggered("ok")) {
-        let bulletImg = new Bitmap(4, 4);
-        bulletImg.fillRect(0, 0, 4, 4, "white");
+        let bulletImg = new Bitmap(12, 12);
+        bulletImg.fillRect(0, 0, 12, 12, "white");
         let bullet = new entity_Bullet(this.pos.x, this.pos.y - 12, bulletImg);
         let scene = SceneManager._scene;
         scene.addChild(bullet.sprite);
@@ -653,6 +677,9 @@ SOFTWARE
       this.createBackground();
       this.createWindowLayer();
       this.createAllWindows();
+      if (LunaShooter.Params.debugCollider) {
+        this.createColliderDebugSprite();
+      }
     }
     createBackground() {
       this.backgroundSprite = new Sprite();
@@ -673,12 +700,21 @@ SOFTWARE
       this.addWindow(this.bossWindow);
       this.bossWindow.hide();
     }
+    createColliderDebugSprite() {
+      this.colliderDebugSprite = new Sprite();
+      this.colliderDebugSprite.bitmap = new Bitmap(
+        Graphics.boxWidth,
+        Graphics.boxHeight
+      );
+      this.addChild(this.colliderDebugSprite);
+    }
     update() {
       this.deltaTime = (SceneShooter.performance.now() - this.timeStamp) / 1000;
       super.update();
       this.updateScriptables();
       systems_CollisionSystem.update();
       this.timeStamp = SceneShooter.performance.now();
+      this.paint();
     }
     updateScriptables() {
       let _gthis = this;
@@ -687,6 +723,31 @@ SOFTWARE
       });
     }
     updateBossWindow() {}
+    paint() {
+      if (LunaShooter.Params.debugCollider) {
+        this.drawColliders();
+      }
+    }
+    drawColliders() {
+      let colliders = systems_CollisionSystem.colliders;
+      let bitmap = this.colliderDebugSprite.bitmap;
+      bitmap.clear();
+      Lambda.iter(colliders, function (collider) {
+        bitmap.fillRect(
+          collider.x,
+          collider.y,
+          collider.width,
+          collider.height,
+          "red"
+        );
+        bitmap.clearRect(
+          collider.x + 2,
+          collider.y + 2,
+          collider.width - 4,
+          collider.height - 4
+        );
+      });
+    }
   }
 
   $hx_exports["SceneShooter"] = SceneShooter;

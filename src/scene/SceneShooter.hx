@@ -1,5 +1,7 @@
 package scene;
 
+import utils.Fn;
+import core.Amaryllis;
 import systems.CollisionSystem;
 import rm.core.Graphics;
 import win.WindowBoss;
@@ -18,6 +20,7 @@ class SceneShooter extends Scene_Base {
   public var scriptables: Array<Scriptable>;
   public var backgroundSprite: Sprite;
   public var bossWindow: WindowBoss;
+  public var colliderDebugSprite: Sprite;
 
   public static var performance = Browser.window.performance;
 
@@ -58,6 +61,9 @@ class SceneShooter extends Scene_Base {
     this.createBackground();
     this.createWindowLayer();
     this.createAllWindows();
+    if (Main.Params.debugCollider) {
+      this.createColliderDebugSprite();
+    }
   }
 
   public function createBackground() {
@@ -79,12 +85,19 @@ class SceneShooter extends Scene_Base {
     this.bossWindow.hide();
   }
 
+  public function createColliderDebugSprite() {
+    this.colliderDebugSprite = new Sprite();
+    this.colliderDebugSprite.bitmap = new Bitmap(Graphics.boxWidth, Graphics.boxHeight);
+    this.addChild(this.colliderDebugSprite);
+  }
+
   public override function update() {
     this.deltaTime = (performance.now() - timeStamp) / 1000;
     super.update();
     this.updateScriptables();
     CollisionSystem.update();
     timeStamp = performance.now();
+    this.paint();
   }
 
   public function updateScriptables() {
@@ -95,5 +108,28 @@ class SceneShooter extends Scene_Base {
 
   public function updateBossWindow() {
     if (this.bossWindow.boss == null) {}
+  }
+
+  public function paint() {
+    if (Main.Params.debugCollider) {
+      this.drawColliders();
+    }
+  }
+
+  public function drawColliders() {
+    var colliders = CollisionSystem.colliders;
+    var bitmap = this.colliderDebugSprite.bitmap;
+
+    bitmap.clear();
+    colliders.iter((collider) -> {
+      var borderWidth = 2;
+      bitmap.fillRect(collider.x, collider.y, collider.width, collider.height, 'red');
+
+      bitmap.clearRect(collider.x
+        + borderWidth, collider.y
+        + borderWidth, collider.width
+        - borderWidth * 2, collider.height
+        - borderWidth * 2);
+    });
   }
 }

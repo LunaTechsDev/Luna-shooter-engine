@@ -18,7 +18,7 @@ class Bullet extends Node2D {
   public override function initialize() {
     super.initialize();
     // Bullet Speed
-    this.speed = 400;
+    this.speed = 200;
     this.dir = { x: 0, y: 0 };
     this.bulletImage.addLoadListener((bitmap) -> {
       this.sprite = new Sprite(bitmap);
@@ -36,6 +36,7 @@ class Bullet extends Node2D {
     super.update(deltaTime);
     this.processMovement(deltaTime);
     this.processSprite();
+    this.processCollider();
     this.processDeletion();
   }
 
@@ -58,6 +59,11 @@ class Bullet extends Node2D {
     if (this.pos.y < 0 || (this.collider.height + this.pos.y) > Graphics.boxHeight) {
       this.destroy();
     }
+  }
+
+  public function processCollider() {
+    this.collider.x = this.pos.x;
+    this.collider.y = this.pos.y;
   }
 
   public override function destroy() {

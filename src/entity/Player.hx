@@ -45,11 +45,13 @@ class Player extends Node2D {
     super.update(deltaTime);
     this.hpGauge.updateGauge(this.player.hpRate());
     // TODO: If marked not visible -- remove it from the bullet list
+    this.bulletList = this.bulletList.filter((bullet) -> bullet.sprite.visible);
     this.bulletList.iter((bullet) -> {
       bullet.update(deltaTime);
       if (bullet.sprite.visible == false) {
         var scene: Scene_Base = SceneManager.currentScene;
         scene.removeChild(bullet.sprite);
+        // Assigning to null does nothing
         bullet = null;
       }
     });
@@ -64,8 +66,9 @@ class Player extends Node2D {
   public function processFiring() {
     if (Input.isTriggered(OK)) {
       var yOffset = 12;
-      var bulletImg = new Bitmap(4, 4);
-      bulletImg.fillRect(0, 0, 4, 4, 'white');
+      var bulletSize = 12;
+      var bulletImg = new Bitmap(bulletSize, bulletSize);
+      bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
 
       var bullet = new Bullet(cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
 

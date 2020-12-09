@@ -31,7 +31,10 @@ class CollisionSystem {
   }
 
   public static function removeCollider(collider: Collider) {
+    // Remove collider ID and set to null to prevent off screen elements
+    // From affect collider ID list
     colliderIds[collider.id] = null;
+    collider.id = null;
     colliders.remove(collider);
   }
 

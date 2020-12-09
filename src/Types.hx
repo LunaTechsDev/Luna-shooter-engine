@@ -1,5 +1,6 @@
 typedef Param = {
   public var backgroundPicture: String;
+  public var debugCollider: Bool;
   public var hpColor: String;
 }
 

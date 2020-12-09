@@ -5,6 +5,11 @@
 @target MV MZ
 
 
+@param debugCollider
+@text Debug Collider
+@desc Shows the colliders in the game when turned on.
+@default true
+
 @param hpColor
 @text  Hp Color
 @desc The color of the HP gauges(css color)
