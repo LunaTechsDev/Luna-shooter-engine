@@ -1,5 +1,8 @@
 package scene;
 
+import rm.core.Input;
+import rm.managers.SceneManager;
+import rm.core.TouchInput;
 import utils.Fn;
 import core.Amaryllis;
 import systems.CollisionSystem;
@@ -94,10 +97,17 @@ class SceneShooter extends Scene_Base {
   public override function update() {
     this.deltaTime = (performance.now() - timeStamp) / 1000;
     super.update();
+    this.processScenePause();
     this.updateScriptables();
     CollisionSystem.update();
     timeStamp = performance.now();
     this.paint();
+  }
+
+  public function processScenePause() {
+    if (Input.isTriggered(MENU) || TouchInput.isCancelled()) {
+      SceneManager.push(ScenePause);
+    }
   }
 
   public function updateScriptables() {

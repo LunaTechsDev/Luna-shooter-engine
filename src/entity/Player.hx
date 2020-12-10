@@ -13,12 +13,17 @@ using ext.CharacterExt;
 class Player extends Node2D {
   public var player: Character;
   public var sprite: Sprite;
+  public var initialSpeed: Int;
   public var speed: Int;
   public var dir: {x: Int, y: Int};
   public var collider: Collider;
   public var hpGauge: SpriteGauge;
   public var playerImg: Bitmap;
   public var bulletList: Array<Bullet>;
+  public var initialBoostCD: Float;
+  public var boosting: Bool;
+  public var boostCD: Float;
+  public var boostFactor: Float;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
     super(posX, posY);
@@ -30,6 +35,10 @@ class Player extends Node2D {
   public override function initialize() {
     super.initialize();
     this.bulletList = [];
+    this.initialBoostCD = 2.5;
+    this.boostCD = 2.5;
+    this.boostFactor = 0.125;
+    this.initialSpeed = 400;
     this.speed = 400;
     this.dir = { x: 0, y: 0 };
     this.playerImg.addLoadListener((bitmap: Bitmap) -> {
@@ -58,6 +67,7 @@ class Player extends Node2D {
 
     this.processFiring();
     this.processMovement(deltaTime);
+    this.processBoosting(deltaTime);
     this.processBoundingBox();
     this.processCollider();
     this.processSprite();
@@ -99,9 +109,23 @@ class Player extends Node2D {
       this.dir.y = -1;
     }
 
+    if (Input.isPressed(SHIFT)) {
+      this.boosting = true;
+    }
+
     var xMove = this.dir.x * this.speed * deltaTime;
     var yMove = this.dir.y * this.speed * deltaTime;
     this.pos.moveBy(xMove, yMove);
+  }
+
+  public function processBoosting(deltaTime: Float) {
+    if (this.boosting && this.boostCD > 0) {
+      this.speed = cast this.initialSpeed * (this.boostFactor * (this.boostCD / this.initialBoostCD));
+      this.boostCD -= deltaTime;
+    } else {
+      this.boostCD = this.initialBoostCD;
+      this.boosting = false;
+    }
   }
 
   public function processBoundingBox() {

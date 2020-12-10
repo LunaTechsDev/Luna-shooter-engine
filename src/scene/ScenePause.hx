@@ -49,6 +49,10 @@ class ScenePause extends Scene_MenuBase {
     this.addWindow(this.pauseConfirmWindow);
   }
 
+  public override function update() {
+    super.update();
+  }
+
   public function resumeHandler() {
     this.popScene();
   }
