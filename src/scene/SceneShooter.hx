@@ -3,8 +3,6 @@ package scene;
 import rm.core.Input;
 import rm.managers.SceneManager;
 import rm.core.TouchInput;
-import utils.Fn;
-import core.Amaryllis;
 import systems.CollisionSystem;
 import rm.core.Graphics;
 import win.WindowBoss;
@@ -15,15 +13,19 @@ import js.Browser;
 import core.Scriptable;
 import rm.scenes.Scene_Base;
 
+using ext.BitmapExt;
+
 @:native('LunaSceneShooter')
 @:expose
 class SceneShooter extends Scene_Base {
   public var timeStamp: Float;
   public var deltaTime: Float;
   public var scriptables: Array<Scriptable>;
+  public var player: entity.Player;
   public var backgroundSprite: Sprite;
   public var bossWindow: WindowBoss;
   public var colliderDebugSprite: Sprite;
+  public var screenSprite: Sprite;
 
   public static var performance = Browser.window.performance;
 
@@ -52,7 +54,7 @@ class SceneShooter extends Scene_Base {
     var playerImage = new Bitmap(100, 100);
     playerImage.fillRect(0, 0, 100, 100, 'white');
     var player = new entity.Player(100, 100, playerData, playerImage);
-
+    this.player = player;
     this.addChild(player.sprite);
     this.scriptables.push(player);
   }
@@ -66,6 +68,7 @@ class SceneShooter extends Scene_Base {
     this.createAllWindows();
     if (Main.Params.debugCollider) {
       this.createColliderDebugSprite();
+      this.createScreenSprite();
     }
   }
 
@@ -92,6 +95,12 @@ class SceneShooter extends Scene_Base {
     this.colliderDebugSprite = new Sprite();
     this.colliderDebugSprite.bitmap = new Bitmap(Graphics.boxWidth, Graphics.boxHeight);
     this.addChild(this.colliderDebugSprite);
+  }
+
+  public function createScreenSprite() {
+    this.screenSprite = new Sprite();
+    this.screenSprite.bitmap = new Bitmap(Graphics.boxWidth, Graphics.boxHeight);
+    this.addChild(this.screenSprite);
   }
 
   public override function update() {
@@ -122,11 +131,25 @@ class SceneShooter extends Scene_Base {
 
   public function paint() {
     if (Main.Params.debugCollider) {
-      this.drawColliders();
+      this.paintColliders();
+    }
+    this.paintPlayerTrail();
+  }
+
+  public function paintPlayerTrail() {
+    var bitmap = this.screenSprite.bitmap;
+    bitmap.clear();
+    var coords = this.player.playerCoordTrail;
+    if (coords.length > 2) {
+      for (index in 1...coords.length) {
+        var start = coords[index - 1];
+        var end = coords[index];
+        bitmap.lineTo('red', start.x, start.y, end.x, end.y);
+      }
     }
   }
 
-  public function drawColliders() {
+  public function paintColliders() {
     var colliders = CollisionSystem.colliders;
     var bitmap = this.colliderDebugSprite.bitmap;
 

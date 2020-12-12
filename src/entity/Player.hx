@@ -24,11 +24,13 @@ class Player extends Node2D {
   public var boosting: Bool;
   public var boostCD: Float;
   public var boostFactor: Float;
+  public var playerCoordTrail: Array<Position>;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
     super(posX, posY);
     this.player = characterData;
     this.playerImg = playerImage;
+    this.playerCoordTrail = [];
     this.initialize();
   }
 
@@ -52,8 +54,22 @@ class Player extends Node2D {
 
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
+    this.processHp();
+    this.processBullets(deltaTime);
+    this.processFiring();
+    this.processMovement(deltaTime);
+    this.processBoosting(deltaTime);
+    this.processCoordTrail();
+    this.processBoundingBox();
+    this.processCollider();
+    this.processSprite();
+  }
+
+  public function processHp() {
     this.hpGauge.updateGauge(this.player.hpRate());
-    // TODO: If marked not visible -- remove it from the bullet list
+  }
+
+  public function processBullets(deltaTime: Float) {
     this.bulletList = this.bulletList.filter((bullet) -> bullet.sprite.visible);
     this.bulletList.iter((bullet) -> {
       bullet.update(deltaTime);
@@ -64,13 +80,17 @@ class Player extends Node2D {
         bullet = null;
       }
     });
+  }
 
-    this.processFiring();
-    this.processMovement(deltaTime);
-    this.processBoosting(deltaTime);
-    this.processBoundingBox();
-    this.processCollider();
-    this.processSprite();
+  public function processCoordTrail() {
+    var xOffset = 0;
+    var yOffset = 0;
+    var currentPos: Position = { x: xOffset + this.pos.x, y: yOffset + this.pos.y };
+    this.playerCoordTrail.push(currentPos);
+
+    if (this.playerCoordTrail.length > 70) {
+      this.playerCoordTrail.shift();
+    }
   }
 
   public function processFiring() {
