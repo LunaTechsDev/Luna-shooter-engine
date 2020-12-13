@@ -277,7 +277,7 @@ SOFTWARE
   }
 
   SceneMap.__name__ = true;
-  class anim_Anim extends PIXI.utils.EventEmitter {
+  class Anim extends PIXI.utils.EventEmitter {
     constructor(sprite, animFn) {
       super();
       this.sprite = sprite;
@@ -296,7 +296,7 @@ SOFTWARE
     }
   }
 
-  anim_Anim.__name__ = true;
+  Anim.__name__ = true;
   class core_Collider extends Rectangle {
     constructor(layer, x, y, width, height) {
       super(x, y, width, height);
@@ -368,6 +368,8 @@ SOFTWARE
       let _gthis = this;
       this.bulletImage.addLoadListener(function (bitmap) {
         _gthis.sprite = new Sprite(bitmap);
+        _gthis.sprite.x = _gthis.pos.x;
+        _gthis.sprite.y = _gthis.pos.y;
         _gthis.collider = new core_Collider(
           "bullet",
           _gthis.pos.x,
@@ -485,7 +487,7 @@ SOFTWARE
         _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
         _gthis.sprite.addChild(_gthis.hpGauge);
       });
-      this.damageAnim = new anim_Anim(this.sprite, function (sprite, dt) {
+      this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
         if (Graphics.frameCount % 30 == 0) {
           _gthis.sprite.visible = true;
         } else if (Graphics.frameCount % 15 == 0) {
@@ -611,6 +613,65 @@ SOFTWARE
   }
 
   entity_Player.__name__ = true;
+  class entity_SpiralSpawner extends entity_Node2D {
+    constructor(scene, posX, posY) {
+      super(posX, posY);
+      this.scene = scene;
+      this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
+      this.shootDirection = { x: 1, y: 1 };
+      this.shootRotation = 0;
+      this.bulletList = [];
+    }
+    start() {
+      this.isStarted = true;
+    }
+    update(deltaTime) {
+      if (this.isStarted) {
+        this.spawnBullet();
+        this.processBullets(deltaTime);
+      }
+    }
+    spawnBullet() {
+      let bulletImg = new Bitmap(12, 12);
+      bulletImg.fillRect(0, 0, 12, 12, "white");
+      let bullet = new entity_Bullet(
+        this.spawnPoint.x,
+        this.spawnPoint.y,
+        bulletImg
+      );
+      bullet.speed = 200;
+      this.shootRotation += 15;
+      this.scene.addChild(bullet.sprite);
+      this.bulletList.push(bullet);
+      bullet.fire({
+        x: Math.cos((this.shootRotation * Math.PI) / 180),
+        y: Math.sin((this.shootRotation * Math.PI) / 180),
+      });
+    }
+    processBullets(deltaTime) {
+      let _gthis = this;
+      let _this = this.bulletList;
+      let _g = [];
+      let _g1 = 0;
+      while (_g1 < _this.length) {
+        let v = _this[_g1];
+        ++_g1;
+        if (v.sprite.visible) {
+          _g.push(v);
+        }
+      }
+      this.bulletList = _g;
+      Lambda.iter(this.bulletList, function (bullet) {
+        bullet.update(deltaTime);
+        if (bullet.sprite.visible == false) {
+          _gthis.scene.removeChild(bullet.sprite);
+          bullet = null;
+        }
+      });
+    }
+  }
+
+  entity_SpiralSpawner.__name__ = true;
   class ext_BitmapExt {
     static lineTo(bitmap, strokeStyle, x1, y1, x2, y2) {
       let context = bitmap.context;
@@ -844,7 +905,11 @@ SOFTWARE
       this.addChild(player.sprite);
       this.scriptables.push(player);
     }
-    createEnemies() {}
+    createEnemies() {
+      let spawner = new entity_SpiralSpawner(this, 300, 300);
+      this.spawner = spawner;
+      spawner.start();
+    }
     create() {
       super.create();
       this.createBackground();
@@ -874,10 +939,10 @@ SOFTWARE
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
         console.log(
-          "src/scene/SceneShooter.hx:92:",
+          "src/scene/SceneShooter.hx:98:",
           _gthis.backgroundParallax1
         );
-        console.log("src/scene/SceneShooter.hx:93:", "add parallax");
+        console.log("src/scene/SceneShooter.hx:99:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }
@@ -914,6 +979,7 @@ SOFTWARE
       this.updateParallax();
       this.updateBossWindow();
       systems_CollisionSystem.update();
+      this.spawner.update(this.deltaTime);
       this.timeStamp = LunaSceneShooter.performance.now();
       this.paint();
     }

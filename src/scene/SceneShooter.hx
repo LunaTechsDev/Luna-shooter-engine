@@ -1,5 +1,6 @@
 package scene;
 
+import entity.SpiralSpawner;
 import rm.core.TilingSprite;
 import rm.core.Input;
 import rm.managers.SceneManager;
@@ -23,6 +24,7 @@ class SceneShooter extends Scene_Base {
   public var deltaTime: Float;
   public var scriptables: Array<Scriptable>;
   public var player: entity.Player;
+  public var spawner: SpiralSpawner;
   public var backgroundSprite: Sprite;
   public var backgroundParallax1: TilingSprite;
   public var bossWindow: WindowBoss;
@@ -61,7 +63,11 @@ class SceneShooter extends Scene_Base {
     this.scriptables.push(player);
   }
 
-  public function createEnemies() {}
+  public function createEnemies() {
+    var spawner = new SpiralSpawner(this, 300, 300);
+    this.spawner = spawner;
+    spawner.start();
+  }
 
   public override function create() {
     super.create();
@@ -125,6 +131,7 @@ class SceneShooter extends Scene_Base {
     this.updateParallax();
     this.updateBossWindow();
     CollisionSystem.update();
+    this.spawner.update(this.deltaTime);
     timeStamp = performance.now();
     this.paint();
   }

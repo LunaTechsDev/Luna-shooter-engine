@@ -22,6 +22,8 @@ class Bullet extends Node2D {
     this.dir = { x: 0, y: 0 };
     this.bulletImage.addLoadListener((bitmap) -> {
       this.sprite = new Sprite(bitmap);
+      this.sprite.x = this.pos.x;
+      this.sprite.y = this.pos.y;
       this.collider = new Collider(BULLET, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
       CollisionSystem.addCollider(this.collider);
     });

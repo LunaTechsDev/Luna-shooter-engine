@@ -3,6 +3,7 @@ package anim;
 import rm.core.Sprite;
 import pixi.interaction.EventEmitter;
 
+@:native('Anim')
 class Anim extends EventEmitter {
   public var isStarted: Bool;
   public var sprite: Sprite;
