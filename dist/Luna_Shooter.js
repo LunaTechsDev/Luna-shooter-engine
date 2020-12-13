@@ -2,7 +2,7 @@
  *
  *  Luna_Shooter.js
  * 
- *  Build Date: 12/9/2020
+ *  Build Date: 12/12/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -249,7 +249,7 @@ SOFTWARE
       return LunaShooter.Params;
     }
     static startGameScene() {
-      SceneManager.push(SceneShooter);
+      SceneManager.push(LunaSceneShooter);
     }
   }
 
@@ -276,6 +276,7 @@ SOFTWARE
     constructor(layer, x, y, width, height) {
       super(x, y, width, height);
       this.layer = layer;
+      this.isOn = true;
       this.collisions = [];
     }
     isCollided(collider) {
@@ -407,11 +408,16 @@ SOFTWARE
       super(posX, posY);
       this.player = characterData;
       this.playerImg = playerImage;
+      this.playerCoordTrail = [];
       this.initialize();
     }
     initialize() {
       super.initialize();
       this.bulletList = [];
+      this.initialBoostCD = 2.5;
+      this.boostCD = 2.5;
+      this.boostFactor = 0.125;
+      this.initialSpeed = 400;
       this.speed = 400;
       this.dir = { x: 0, y: 0 };
       let _gthis = this;
@@ -431,8 +437,21 @@ SOFTWARE
     }
     update(deltaTime) {
       super.update(deltaTime);
+      this.processHp();
+      this.processBullets(deltaTime);
+      this.processFiring();
+      this.processMovement(deltaTime);
+      this.processBoosting(deltaTime);
+      this.processCoordTrail();
+      this.processBoundingBox();
+      this.processCollider();
+      this.processSprite();
+    }
+    processHp() {
       let char = this.player;
       this.hpGauge.updateGauge(char.hp / char.maxHp);
+    }
+    processBullets(deltaTime) {
       let _this = this.bulletList;
       let _g = [];
       let _g1 = 0;
@@ -452,11 +471,13 @@ SOFTWARE
           bullet = null;
         }
       });
-      this.processFiring();
-      this.processMovement(deltaTime);
-      this.processBoundingBox();
-      this.processCollider();
-      this.processSprite();
+    }
+    processCoordTrail() {
+      let currentPos = { x: this.pos.x, y: this.pos.y };
+      this.playerCoordTrail.push(currentPos);
+      if (this.playerCoordTrail.length > 70) {
+        this.playerCoordTrail.shift();
+      }
     }
     processFiring() {
       if (Input.isTriggered("ok")) {
@@ -484,11 +505,25 @@ SOFTWARE
       if (Input.isPressed("up")) {
         this.dir.y = -1;
       }
+      if (Input.isPressed("shift")) {
+        this.boosting = true;
+      }
       let xMove = this.dir.x * this.speed * deltaTime;
       let yMove = this.dir.y * this.speed * deltaTime;
       let pos = this.pos;
       pos.x += xMove;
       pos.y += yMove;
+    }
+    processBoosting(deltaTime) {
+      if (this.boosting && this.boostCD > 0) {
+        this.speed =
+          this.initialSpeed *
+          (this.boostFactor * (this.boostCD / this.initialBoostCD));
+        this.boostCD -= deltaTime;
+      } else {
+        this.boostCD = this.initialBoostCD;
+        this.boosting = false;
+      }
     }
     processBoundingBox() {
       this.pos.x = Math.min(
@@ -515,6 +550,19 @@ SOFTWARE
   }
 
   entity_Player.__name__ = true;
+  class ext_BitmapExt {
+    static lineTo(bitmap, strokeStyle, x1, y1, x2, y2) {
+      let context = bitmap.context;
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.strokeStyle = strokeStyle;
+      context.stroke();
+      bitmap._baseTexture.update();
+    }
+  }
+
+  ext_BitmapExt.__name__ = true;
   class haxe_iterators_ArrayIterator {
     constructor(array) {
       this.current = 0;
@@ -641,13 +689,76 @@ SOFTWARE
 
   js_Boot.__name__ = true;
 
-  class SceneShooter extends Scene_Base {
+  class LunaScenePause extends Scene_MenuBase {
+    constructor() {
+      super();
+    }
+    create() {
+      this.createAllWindows();
+    }
+    createAllWindows() {
+      this.createTitle();
+      this.createPauseWindow();
+      this.createConfirmWindow();
+    }
+    createTitle() {
+      this.pauseTitleWindow = new LNSWindowTitle(0, 70, 125, 75);
+      this.addWindow(this.pauseTitleWindow);
+    }
+    createPauseWindow() {
+      let xPosition = Graphics.boxWidth / 2;
+      this.pauseMenuWindow = new WindowPauseMenu(xPosition, 120, 150, 250);
+      this.pauseMenuWindow.setHandler(
+        "resume",
+        $bind(this, this.resumeHandler)
+      );
+      this.pauseMenuWindow.setHandler("retry", $bind(this, this.retryHandler));
+      this.pauseMenuWindow.setHandler(
+        "returnToTitle",
+        $bind(this, this.returnToTitleHandler)
+      );
+      this.pauseMenuWindow.activate();
+      this.addWindow(this.pauseMenuWindow);
+    }
+    createConfirmWindow() {
+      let win = this.pauseMenuWindow;
+      this.pauseConfirmWindow = new LNWindowConfirmMenu(win.x, win.y, 150, 75);
+      this.pauseConfirmWindow.setHandler("yes", $bind(this, this.yesHandler));
+      this.pauseConfirmWindow.setHandler("no", $bind(this, this.noHandler));
+      this.pauseConfirmWindow.close();
+      this.addWindow(this.pauseConfirmWindow);
+    }
+    update() {
+      super.update();
+    }
+    resumeHandler() {
+      this.popScene();
+    }
+    retryHandler() {
+      SceneManager.goto(LunaSceneShooter);
+    }
+    returnToTitleHandler() {
+      this.pauseConfirmWindow.open();
+      this.pauseConfirmWindow.activate();
+    }
+    yesHandler() {
+      SceneManager.goto(Scene_Title);
+    }
+    noHandler() {
+      this.pauseConfirmWindow.close();
+      this.pauseConfirmWindow.deactivate();
+    }
+  }
+
+  $hx_exports["LunaScenePause"] = LunaScenePause;
+  LunaScenePause.__name__ = true;
+  class LunaSceneShooter extends Scene_Base {
     constructor() {
       super();
     }
     initialize() {
       super.initialize();
-      this.timeStamp = SceneShooter.performance.now();
+      this.timeStamp = LunaSceneShooter.performance.now();
       this.scriptables = [];
       systems_CollisionSystem.initialize();
       this.createScriptables();
@@ -668,6 +779,7 @@ SOFTWARE
       let playerImage = new Bitmap(100, 100);
       playerImage.fillRect(0, 0, 100, 100, "white");
       let player = new entity_Player(100, 100, playerData, playerImage);
+      this.player = player;
       this.addChild(player.sprite);
       this.scriptables.push(player);
     }
@@ -675,10 +787,12 @@ SOFTWARE
     create() {
       super.create();
       this.createBackground();
+      this.createParallax();
       this.createWindowLayer();
       this.createAllWindows();
       if (LunaShooter.Params.debugCollider) {
         this.createColliderDebugSprite();
+        this.createScreenSprite();
       }
     }
     createBackground() {
@@ -690,6 +804,20 @@ SOFTWARE
       bitmap.addLoadListener(function (bitmap) {
         _gthis.backgroundSprite.bitmap = bitmap;
         _gthis.addChildAt(_gthis.backgroundSprite, 0);
+      });
+    }
+    createParallax() {
+      let forestParallax = ImageManager.loadPicture("Forest", 0);
+      let _gthis = this;
+      forestParallax.addLoadListener(function (bitmap) {
+        _gthis.backgroundParallax1 = new TilingSprite(bitmap);
+        _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
+        console.log(
+          "src/scene/SceneShooter.hx:92:",
+          _gthis.backgroundParallax1
+        );
+        console.log("src/scene/SceneShooter.hx:93:", "add parallax");
+        _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }
     createAllWindows() {
@@ -708,13 +836,30 @@ SOFTWARE
       );
       this.addChild(this.colliderDebugSprite);
     }
+    createScreenSprite() {
+      this.screenSprite = new Sprite();
+      this.screenSprite.bitmap = new Bitmap(
+        Graphics.boxWidth,
+        Graphics.boxHeight
+      );
+      this.addChild(this.screenSprite);
+    }
     update() {
-      this.deltaTime = (SceneShooter.performance.now() - this.timeStamp) / 1000;
+      this.deltaTime =
+        (LunaSceneShooter.performance.now() - this.timeStamp) / 1000;
       super.update();
+      this.processScenePause();
       this.updateScriptables();
+      this.updateParallax();
+      this.updateBossWindow();
       systems_CollisionSystem.update();
-      this.timeStamp = SceneShooter.performance.now();
+      this.timeStamp = LunaSceneShooter.performance.now();
       this.paint();
+    }
+    processScenePause() {
+      if (Input.isTriggered("menu") || TouchInput.isCancelled()) {
+        SceneManager.push(LunaScenePause);
+      }
     }
     updateScriptables() {
       let _gthis = this;
@@ -722,24 +867,55 @@ SOFTWARE
         scriptable.update(_gthis.deltaTime);
       });
     }
+    updateParallax() {
+      if (this.backgroundParallax1 != null) {
+        this.backgroundParallax1.origin.x -= 0.64;
+      }
+    }
     updateBossWindow() {}
     paint() {
       if (LunaShooter.Params.debugCollider) {
-        this.drawColliders();
+        this.paintColliders();
+      }
+      this.paintPlayerTrail();
+    }
+    paintPlayerTrail() {
+      let bitmap = this.screenSprite.bitmap;
+      bitmap.clear();
+      let coords = this.player.playerCoordTrail;
+      if (coords.length > 2) {
+        let _g = 1;
+        let _g1 = coords.length;
+        while (_g < _g1) {
+          let index = _g++;
+          let start = coords[index - 1];
+          let end = coords[index];
+          ext_BitmapExt.lineTo(bitmap, "red", start.x, start.y, end.x, end.y);
+        }
       }
     }
-    drawColliders() {
+    paintColliders() {
       let colliders = systems_CollisionSystem.colliders;
       let bitmap = this.colliderDebugSprite.bitmap;
       bitmap.clear();
       Lambda.iter(colliders, function (collider) {
-        bitmap.fillRect(
-          collider.x,
-          collider.y,
-          collider.width,
-          collider.height,
-          "red"
-        );
+        if (collider.isOn) {
+          bitmap.fillRect(
+            collider.x,
+            collider.y,
+            collider.width,
+            collider.height,
+            "red"
+          );
+        } else {
+          bitmap.fillRect(
+            collider.x,
+            collider.y,
+            collider.width,
+            collider.height,
+            "blue"
+          );
+        }
         bitmap.clearRect(
           collider.x + 2,
           collider.y + 2,
@@ -750,8 +926,8 @@ SOFTWARE
     }
   }
 
-  $hx_exports["SceneShooter"] = SceneShooter;
-  SceneShooter.__name__ = true;
+  $hx_exports["LunaSceneShooter"] = LunaSceneShooter;
+  LunaSceneShooter.__name__ = true;
   class spr_SpriteGauge extends Sprite {
     constructor(x, y, width, height) {
       super();
@@ -792,10 +968,60 @@ SOFTWARE
   }
 
   win_WindowBoss.__name__ = true;
+  class LNWindowConfirmMenu extends Window_HorzCommand {
+    constructor(x, y, width, height) {
+      let rect = new Rectangle(x, y, width, height);
+      super(rect);
+    }
+    makeCommandList() {
+      this.addCommand("Yes", "yes", true);
+      this.addCommand("No", "no", true);
+    }
+  }
+
+  LNWindowConfirmMenu.__name__ = true;
+  class WindowPauseMenu extends Window_Command {
+    constructor(x, y, width, height) {
+      let rect = new Rectangle(x, y, width, height);
+      super(rect);
+    }
+    initialize(rect) {
+      super.initialize(rect);
+    }
+    makeCommandList() {
+      super.makeCommandList();
+      this.addCommand("Resume", "resume", true);
+      this.addCommand("Return To Title", "returnToTitle", true);
+    }
+  }
+
+  WindowPauseMenu.__name__ = true;
+  class LNSWindowTitle extends Window_Base {
+    constructor(x, y, width, height) {
+      let rect = new Rectangle(x, y, width, height);
+      super(rect);
+    }
+  }
+
+  LNSWindowTitle.__name__ = true;
   function $getIterator(o) {
     if (o instanceof Array) return new haxe_iterators_ArrayIterator(o);
     else return o.iterator();
   }
+  var $_;
+  function $bind(o, m) {
+    if (m == null) return null;
+    if (m.__id__ == null) m.__id__ = $global.$haxeUID++;
+    var f;
+    if (o.hx__closures__ == null) o.hx__closures__ = {};
+    else f = o.hx__closures__[m.__id__];
+    if (f == null) {
+      f = m.bind(o);
+      o.hx__closures__[m.__id__] = f;
+    }
+    return f;
+  }
+  $global.$haxeUID |= 0;
   if (
     typeof performance != "undefined"
       ? typeof performance.now == "function"
@@ -810,7 +1036,7 @@ SOFTWARE
   systems_CollisionSystem.colliderIds = [];
   LunaShooter.listener = new PIXI.utils.EventEmitter();
   LunaShooter.collisionSys = systems_CollisionSystem;
-  SceneShooter.performance = window.performance;
+  LunaSceneShooter.performance = window.performance;
   LunaShooter.main();
 })(
   typeof exports != "undefined"
@@ -820,7 +1046,13 @@ SOFTWARE
     : typeof self != "undefined"
     ? self
     : this,
-  {}
+  typeof window != "undefined"
+    ? window
+    : typeof global != "undefined"
+    ? global
+    : typeof self != "undefined"
+    ? self
+    : this
 );
 
 //# sourceMappingURL=Luna_Shooter.js.map

@@ -27,7 +27,7 @@ class BitmapExt {
 
   public static inline function updateTexture(bitmap: Bitmap) {
     #if compileMV
-    bitmap._setDirty();
+    untyped bitmap._setDirty();
     #else
     // untyped to bypass
     untyped bitmap._baseTexture.update();

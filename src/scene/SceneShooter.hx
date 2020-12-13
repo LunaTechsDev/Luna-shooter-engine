@@ -1,5 +1,6 @@
 package scene;
 
+import rm.core.TilingSprite;
 import rm.core.Input;
 import rm.managers.SceneManager;
 import rm.core.TouchInput;
@@ -23,6 +24,7 @@ class SceneShooter extends Scene_Base {
   public var scriptables: Array<Scriptable>;
   public var player: entity.Player;
   public var backgroundSprite: Sprite;
+  public var backgroundParallax1: TilingSprite;
   public var bossWindow: WindowBoss;
   public var colliderDebugSprite: Sprite;
   public var screenSprite: Sprite;
@@ -64,6 +66,7 @@ class SceneShooter extends Scene_Base {
   public override function create() {
     super.create();
     this.createBackground();
+    this.createParallax();
     this.createWindowLayer();
     this.createAllWindows();
     if (Main.Params.debugCollider) {
@@ -78,6 +81,17 @@ class SceneShooter extends Scene_Base {
     bitmap.addLoadListener((bitmap) -> {
       this.backgroundSprite.bitmap = bitmap;
       this.addChildAt(this.backgroundSprite, 0);
+    });
+  }
+
+  public function createParallax() {
+    var forestParallax = ImageManager.loadPicture('Forest', 0);
+    forestParallax.addLoadListener((bitmap) -> {
+      this.backgroundParallax1 = new TilingSprite(bitmap);
+      this.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
+      trace(this.backgroundParallax1);
+      trace('add parallax');
+      this.addChildAt(this.backgroundParallax1, 1);
     });
   }
 
@@ -108,6 +122,8 @@ class SceneShooter extends Scene_Base {
     super.update();
     this.processScenePause();
     this.updateScriptables();
+    this.updateParallax();
+    this.updateBossWindow();
     CollisionSystem.update();
     timeStamp = performance.now();
     this.paint();
@@ -123,6 +139,12 @@ class SceneShooter extends Scene_Base {
     scriptables.iter((scriptable) -> {
       scriptable.update(deltaTime);
     });
+  }
+
+  public function updateParallax() {
+    if (this.backgroundParallax1 != null) {
+      this.backgroundParallax1.origin.x -= 0.64;
+    }
   }
 
   public function updateBossWindow() {
