@@ -15,6 +15,10 @@
 @desc The color of the HP gauges(css color)
 @default B33951 
 
+@param damageFlashTime
+@text Damage Flash Time
+@desc The time enemies and players flash when taking damage(seconds)
+@default 2.0
 
 @param backgroundPicture
 @text Background Picture

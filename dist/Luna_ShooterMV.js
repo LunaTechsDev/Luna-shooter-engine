@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/12/2020
+ *  Build Date: 12/13/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -26,6 +26,10 @@
 @desc The color of the HP gauges(css color)
 @default B33951 
 
+@param damageFlashTime
+@text Damage Flash Time
+@desc The time enemies and players flash when taking damage(seconds)
+@default 2.0
 
 @param backgroundPicture
 @text Background Picture
@@ -212,6 +216,7 @@ SOFTWARE
         backgroundPicture: params["backgroundPicture"],
         debugCollider: tmp,
         hpColor: params["hpColor"],
+        damageFlashTime: parseFloat(params["damageFlashTime"]),
       };
 
       //=============================================================================
@@ -272,6 +277,26 @@ SOFTWARE
   }
 
   SceneMap.__name__ = true;
+  class anim_Anim extends PIXI.utils.EventEmitter {
+    constructor(sprite, animFn) {
+      super();
+      this.sprite = sprite;
+      this.animFn = animFn;
+    }
+    start() {
+      this.isStarted = true;
+      this.emit("start", this);
+    }
+    stop() {
+      this.isStarted = false;
+      this.emit("stop", this);
+    }
+    update(deltaTime) {
+      this.animFn(this.sprite, deltaTime);
+    }
+  }
+
+  anim_Anim.__name__ = true;
   class core_Collider extends Rectangle {
     constructor(layer, x, y, width, height) {
       super(x, y, width, height);
@@ -325,9 +350,7 @@ SOFTWARE
   class entity_Node2D extends Scriptable {
     constructor(posX, posY) {
       super();
-      this.pos = { x: 0, y: 0 };
-      this.pos.x = posX;
-      this.pos.y = posY;
+      this.pos = { x: posX, y: posY };
     }
   }
 
@@ -403,7 +426,35 @@ SOFTWARE
   }
 
   entity_Bullet.__name__ = true;
-  class entity_Player extends entity_Node2D {
+  class entity_Character extends entity_Node2D {
+    constructor(posX, posY) {
+      super(posX, posY);
+    }
+    initialize() {
+      this.damageAnimTime = 0;
+    }
+    takeDamage() {
+      this.damageAnimTime = LunaShooter.Params.damageFlashTime;
+      this.damageAnim.start();
+    }
+    update(deltaTime) {
+      super.update(deltaTime);
+      if (this.damageAnim != null && this.damageAnim.isStarted) {
+        this.processDamage(deltaTime);
+      }
+    }
+    processDamage(deltaTime) {
+      if (this.damageAnimTime > 0) {
+        this.damageAnim.update(deltaTime);
+        this.damageAnimTime -= deltaTime;
+      } else {
+        this.damageAnim.stop();
+      }
+    }
+  }
+
+  entity_Character.__name__ = true;
+  class entity_Player extends entity_Character {
     constructor(posX, posY, characterData, playerImage) {
       super(posX, posY);
       this.player = characterData;
@@ -433,6 +484,16 @@ SOFTWARE
         systems_CollisionSystem.addCollider(_gthis.collider);
         _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
         _gthis.sprite.addChild(_gthis.hpGauge);
+      });
+      this.damageAnim = new anim_Anim(this.sprite, function (sprite, dt) {
+        if (Graphics.frameCount % 30 == 0) {
+          _gthis.sprite.visible = true;
+        } else if (Graphics.frameCount % 15 == 0) {
+          _gthis.sprite.visible = false;
+        }
+      });
+      this.damageAnim.on("stop", function (anim) {
+        _gthis.sprite.visible = true;
       });
     }
     update(deltaTime) {

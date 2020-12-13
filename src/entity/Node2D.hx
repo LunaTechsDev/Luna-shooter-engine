@@ -5,8 +5,6 @@ class Node2D extends Scriptable {
 
   public function new(posX: Int, posY: Int) {
     super();
-    this.pos = { x: 0, y: 0 };
-    this.pos.x = posX;
-    this.pos.y = posY;
+    this.pos = { x: posX, y: posY };
   }
 }

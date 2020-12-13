@@ -11,3 +11,8 @@ enum abstract ScriptEvents(String) from String to String {
   public var INIT = 'init';
   public var DESTROY = 'destroy';
 }
+
+enum abstract AnimEvents(String) from String to String {
+  public var START = 'start';
+  public var STOP = 'stop';
+}

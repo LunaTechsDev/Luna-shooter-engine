@@ -1,5 +1,6 @@
 package entity;
 
+import anim.Anim;
 import rm.core.Sprite;
 import rm.scenes.Scene_Base;
 import rm.managers.SceneManager;
@@ -10,9 +11,8 @@ import Types.Character;
 using ext.PositionExt;
 using ext.CharacterExt;
 
-class Player extends Node2D {
+class Player extends entity.Character {
   public var player: Character;
-  public var sprite: Sprite;
   public var initialSpeed: Int;
   public var speed: Int;
   public var dir: {x: Int, y: Int};
@@ -49,6 +49,16 @@ class Player extends Node2D {
       CollisionSystem.addCollider(this.collider);
       this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
       this.sprite.addChild(this.hpGauge);
+    });
+    this.damageAnim = new Anim(this.sprite, (sprite, dt) -> {
+      if (Graphics.frameCount % 30 == 0) {
+        this.sprite.visible = true;
+      } else if (Graphics.frameCount % 15 == 0) {
+        this.sprite.visible = false;
+      }
+    });
+    this.damageAnim.on(STOP, (anim: Anim) -> {
+      this.sprite.visible = true;
     });
   }
 

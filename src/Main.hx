@@ -23,7 +23,8 @@ class Main {
     Params = {
       backgroundPicture: params['backgroundPicture'],
       debugCollider: params['debugCollider'].toLowerCase() == 'true',
-      hpColor: params['hpColor']
+      hpColor: params['hpColor'],
+      damageFlashTime: Fn.parseFloatJs(params['damageFlashTime'])
     }
 
     Comment.title('Scene_Map');
