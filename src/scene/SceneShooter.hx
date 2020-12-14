@@ -1,5 +1,6 @@
 package scene;
 
+import entity.VSpawner;
 import entity.LineSpawner;
 import entity.SpinningXSpawner;
 import entity.XSpawner;
@@ -68,7 +69,7 @@ class SceneShooter extends Scene_Base {
   }
 
   public function createEnemies() {
-    var spawner = new LineSpawner(this, 300, 300);
+    var spawner = new VSpawner(this, 300, 300);
     this.spawner = spawner;
     spawner.start();
   }

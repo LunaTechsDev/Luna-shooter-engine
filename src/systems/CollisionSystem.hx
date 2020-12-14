@@ -2,6 +2,12 @@ package systems;
 
 import core.Collider;
 
+/**
+ * Handles adding and removing colllisions
+ * from the colliders, which are handled
+ * internally by the individually entity
+ * with the collider.
+ */
 class CollisionSystem {
   public static var colliders: Array<Collider> = [];
   public static var colliderIds: Array<Int> = [];
@@ -39,11 +45,28 @@ class CollisionSystem {
   }
 
   public static function update() {
+    handleCollisions();
+    handleNonCollisions();
+  }
+
+  public static function handleCollisions() {
     colliders.iter((collider: Collider) -> {
+      // Iterate through each collider individually and get collision colliders
       var otherCollisions = colliders.filter((collision) -> collider.isCollided(collision)
         && collider.id != collision.id);
       for (collision in otherCollisions) {
         collider.addCollision(collision);
+      }
+    });
+  }
+
+  public static function handleNonCollisions() {
+    colliders.iter((collider: Collider) -> {
+      // Iterate through each collider individually and get collision colliders
+      var otherNonCollisions = colliders.filter((collision) -> !collider.isCollided(collision)
+        && collider.id != collision.id);
+      for (collision in otherNonCollisions) {
+        collider.removeCollision(collision);
       }
     });
   }

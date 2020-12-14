@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/13/2020
+ *  Build Date: 12/14/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -175,6 +175,10 @@ SOFTWARE
       HxOverrides.remove(systems_CollisionSystem.colliders, collider);
     }
     static update() {
+      systems_CollisionSystem.handleCollisions();
+      systems_CollisionSystem.handleNonCollisions();
+    }
+    static handleCollisions() {
       Lambda.iter(systems_CollisionSystem.colliders, function (collider) {
         let _this = systems_CollisionSystem.colliders;
         let _g = [];
@@ -191,6 +195,26 @@ SOFTWARE
           let collision = _g[_g2];
           ++_g2;
           collider.addCollision(collision);
+        }
+      });
+    }
+    static handleNonCollisions() {
+      Lambda.iter(systems_CollisionSystem.colliders, function (collider) {
+        let _this = systems_CollisionSystem.colliders;
+        let _g = [];
+        let _g1 = 0;
+        while (_g1 < _this.length) {
+          let v = _this[_g1];
+          ++_g1;
+          if (!collider.isCollided(v) && collider.id != v.id) {
+            _g.push(v);
+          }
+        }
+        let _g2 = 0;
+        while (_g2 < _g.length) {
+          let collision = _g[_g2];
+          ++_g2;
+          collider.removeCollision(collision);
         }
       });
     }
@@ -326,7 +350,14 @@ SOFTWARE
       }
     }
     addCollision(collision) {
-      this.collisions.push(collision);
+      if (!this.collisions.includes(collision)) {
+        this.collisions.push(collision);
+      }
+    }
+    removeCollision(collision) {
+      if (this.collisions.includes(collision) && !collision.isCollided(this)) {
+        HxOverrides.remove(this.collisions, collision);
+      }
     }
   }
 
@@ -593,6 +624,7 @@ SOFTWARE
       this.processCoordTrail();
       this.processBoundingBox();
       this.processCollider();
+      this.processCollision();
       this.processSprite();
     }
     processHp() {
@@ -686,6 +718,23 @@ SOFTWARE
     processCollider() {
       this.collider.x = this.pos.x;
       this.collider.y = this.pos.y;
+    }
+    processCollision() {
+      let _g = 0;
+      let _g1 = this.collider.collisions;
+      while (_g < _g1.length) {
+        let collision = _g1[_g];
+        ++_g;
+        switch (collision.layer) {
+          case "bullet":
+            this.takeDamage();
+            break;
+          case "enemy":
+            this.takeDamage();
+            break;
+          default:
+        }
+      }
     }
     processSprite() {
       this.sprite.x = this.pos.x;
@@ -806,6 +855,51 @@ SOFTWARE
   }
 
   entity_SpiralSpawner.__name__ = true;
+  class entity_VSpawner extends entity_BulletSpawner {
+    constructor(scene, posX, posY) {
+      super(posX, posY);
+      this.scene = scene;
+      this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
+      this.shootDirection = { x: 1, y: 1 };
+      this.shootRotation = 0;
+      this.fireCooldown = 0;
+      this.bulletList = [];
+    }
+    spawnBullet(deltaTime) {
+      if (this.fireCooldown <= 0) {
+        let bulletImg = new Bitmap(12, 12);
+        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bottomLeft = 225 + this.shootRotation;
+        let bottomRight = 315 + this.shootRotation;
+        let angleList = [bottomLeft, bottomRight];
+        let _g = 0;
+        while (_g < angleList.length) {
+          let angle = angleList[_g];
+          ++_g;
+          let bullet = new entity_Bullet(
+            this.spawnPoint.x,
+            this.spawnPoint.y,
+            bulletImg
+          );
+          bullet.speed = 200;
+          this.scene.addChild(bullet.sprite);
+          this.bulletList.push(bullet);
+          bullet.fire(this.createRotationVector(angle));
+        }
+        this.fireCooldown = 0.25;
+      } else {
+        this.fireCooldown -= deltaTime;
+      }
+    }
+    createRotationVector(angle) {
+      return {
+        x: Math.cos((angle * Math.PI) / 180),
+        y: Math.sin((angle * Math.PI) / 180),
+      };
+    }
+  }
+
+  entity_VSpawner.__name__ = true;
   class ext_BitmapExt {
     static lineTo(bitmap, strokeStyle, x1, y1, x2, y2) {
       let context = bitmap.context;
@@ -1040,7 +1134,7 @@ SOFTWARE
       this.scriptables.push(player);
     }
     createEnemies() {
-      let spawner = new entity_LineSpawner(this, 300, 300);
+      let spawner = new entity_VSpawner(this, 300, 300);
       this.spawner = spawner;
       spawner.start();
     }
@@ -1073,10 +1167,10 @@ SOFTWARE
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
         console.log(
-          "src/scene/SceneShooter.hx:102:",
+          "src/scene/SceneShooter.hx:103:",
           _gthis.backgroundParallax1
         );
-        console.log("src/scene/SceneShooter.hx:103:", "add parallax");
+        console.log("src/scene/SceneShooter.hx:104:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }

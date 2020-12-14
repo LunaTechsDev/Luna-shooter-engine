@@ -72,6 +72,7 @@ class Player extends entity.Character {
     this.processCoordTrail();
     this.processBoundingBox();
     this.processCollider();
+    this.processCollision();
     this.processSprite();
   }
 
@@ -167,6 +168,20 @@ class Player extends entity.Character {
   public function processCollider() {
     this.collider.x = this.pos.x;
     this.collider.y = this.pos.y;
+  }
+
+  public function processCollision() {
+    for (collision in this.collider.collisions) {
+      switch (collision.layer) {
+        case BULLET:
+          // Do something
+          this.takeDamage();
+        case ENEMY:
+          this.takeDamage();
+        case _:
+          // Default do nothing
+      }
+    }
   }
 
   public function processSprite() {

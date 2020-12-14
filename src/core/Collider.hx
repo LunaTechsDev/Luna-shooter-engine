@@ -28,6 +28,14 @@ class Collider extends Rectangle {
   }
 
   public function addCollision(collision: Collider) {
-    this.collisions.push(collision);
+    if (!this.collisions.contains(collision)) {
+      this.collisions.push(collision);
+    }
+  }
+
+  public function removeCollision(collision: Collider) {
+    if (this.collisions.contains(collision) && !collision.isCollided(this)) {
+      this.collisions.remove(collision);
+    }
   }
 }
