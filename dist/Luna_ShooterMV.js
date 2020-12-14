@@ -428,6 +428,44 @@ SOFTWARE
   }
 
   entity_Bullet.__name__ = true;
+  class entity_BulletSpawner extends entity_Node2D {
+    constructor(posX, posY) {
+      super(posX, posY);
+    }
+    start() {
+      this.isStarted = true;
+    }
+    update(deltaTime) {
+      if (this.isStarted) {
+        this.spawnBullet(deltaTime);
+        this.processBullets(deltaTime);
+      }
+    }
+    spawnBullet(deltaTime) {}
+    processBullets(deltaTime) {
+      let _gthis = this;
+      let _this = this.bulletList;
+      let _g = [];
+      let _g1 = 0;
+      while (_g1 < _this.length) {
+        let v = _this[_g1];
+        ++_g1;
+        if (v.sprite.visible) {
+          _g.push(v);
+        }
+      }
+      this.bulletList = _g;
+      Lambda.iter(this.bulletList, function (bullet) {
+        bullet.update(deltaTime);
+        if (bullet.sprite.visible == false) {
+          _gthis.scene.removeChild(bullet.sprite);
+          bullet = null;
+        }
+      });
+    }
+  }
+
+  entity_BulletSpawner.__name__ = true;
   class entity_Character extends entity_Node2D {
     constructor(posX, posY) {
       super(posX, posY);
@@ -456,6 +494,53 @@ SOFTWARE
   }
 
   entity_Character.__name__ = true;
+  class entity_LineSpawner extends entity_BulletSpawner {
+    constructor(scene, posX, posY) {
+      super(posX, posY);
+      this.scene = scene;
+      this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
+      this.shootDirection = { x: 1, y: 1 };
+      this.shootRotation = 0;
+      this.fireCooldown = 0.5;
+      this.bulletList = [];
+    }
+    spawnBullet(deltaTime) {
+      if (this.fireCooldown <= 0) {
+        let bulletImg = new Bitmap(12, 12);
+        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let right = this.shootRotation;
+        let left = 180 + this.shootRotation;
+        let angleList = [right, left];
+        let _g = 0;
+        while (_g < angleList.length) {
+          let angle = angleList[_g];
+          ++_g;
+          let bullet = new entity_Bullet(
+            this.spawnPoint.x,
+            this.spawnPoint.y,
+            bulletImg
+          );
+          bullet.speed = 200;
+          this.scene.addChild(bullet.sprite);
+          this.bulletList.push(bullet);
+          let pos = this.createRotationVector(angle);
+          pos.y = 0;
+          bullet.fire(pos);
+        }
+        this.fireCooldown = 0.25;
+      } else {
+        this.fireCooldown -= deltaTime;
+      }
+    }
+    createRotationVector(angle) {
+      return {
+        x: Math.cos((angle * Math.PI) / 180),
+        y: Math.sin((angle * Math.PI) / 180),
+      };
+    }
+  }
+
+  entity_LineSpawner.__name__ = true;
   class entity_Player extends entity_Character {
     constructor(posX, posY, characterData, playerImage) {
       super(posX, posY);
@@ -613,7 +698,86 @@ SOFTWARE
   }
 
   entity_Player.__name__ = true;
-  class entity_SpiralSpawner extends entity_Node2D {
+  class entity_XSpawner extends entity_BulletSpawner {
+    constructor(scene, posX, posY) {
+      super(posX, posY);
+      this.scene = scene;
+      this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
+      this.shootDirection = { x: 1, y: 1 };
+      this.shootRotation = 0;
+      this.fireCooldown = 0.5;
+      this.bulletList = [];
+    }
+    spawnBullet(deltaTime) {
+      if (this.fireCooldown <= 0) {
+        let bulletImg = new Bitmap(12, 12);
+        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let angleList = [45, 125, 225, 315];
+        let _g = 0;
+        while (_g < angleList.length) {
+          let angle = angleList[_g];
+          ++_g;
+          let bullet = new entity_Bullet(
+            this.spawnPoint.x,
+            this.spawnPoint.y,
+            bulletImg
+          );
+          bullet.speed = 200;
+          this.scene.addChild(bullet.sprite);
+          this.bulletList.push(bullet);
+          bullet.fire(this.createRotationVector(angle));
+        }
+        this.fireCooldown = 0.25;
+      } else {
+        this.fireCooldown -= deltaTime;
+      }
+    }
+    createRotationVector(angle) {
+      return {
+        x: Math.cos((angle * Math.PI) / 180),
+        y: Math.sin((angle * Math.PI) / 180),
+      };
+    }
+  }
+
+  entity_XSpawner.__name__ = true;
+  class entity_SpinningXSpawner extends entity_XSpawner {
+    constructor(scene, posX, posY) {
+      super(scene, posX, posY);
+    }
+    spawnBullet(deltaTime) {
+      if (this.fireCooldown <= 0) {
+        let bulletImg = new Bitmap(12, 12);
+        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let topRight = 45 + this.shootRotation;
+        let topLeft = 125 + this.shootRotation;
+        let bottomLeft = 225 + this.shootRotation;
+        let bottomRight = 315 + this.shootRotation;
+        let angleList = [topRight, topLeft, bottomLeft, bottomRight];
+        let _g = 0;
+        while (_g < angleList.length) {
+          let angle = angleList[_g];
+          ++_g;
+          let bullet = new entity_Bullet(
+            this.spawnPoint.x,
+            this.spawnPoint.y,
+            bulletImg
+          );
+          bullet.speed = 200;
+          this.scene.addChild(bullet.sprite);
+          this.bulletList.push(bullet);
+          bullet.fire(this.createRotationVector(angle));
+        }
+        this.shootRotation += 15;
+        this.fireCooldown = 0.25;
+      } else {
+        this.fireCooldown -= deltaTime;
+      }
+    }
+  }
+
+  entity_SpinningXSpawner.__name__ = true;
+  class entity_SpiralSpawner extends entity_BulletSpawner {
     constructor(scene, posX, posY) {
       super(posX, posY);
       this.scene = scene;
@@ -622,16 +786,7 @@ SOFTWARE
       this.shootRotation = 0;
       this.bulletList = [];
     }
-    start() {
-      this.isStarted = true;
-    }
-    update(deltaTime) {
-      if (this.isStarted) {
-        this.spawnBullet();
-        this.processBullets(deltaTime);
-      }
-    }
-    spawnBullet() {
+    spawnBullet(deltaTime) {
       let bulletImg = new Bitmap(12, 12);
       bulletImg.fillRect(0, 0, 12, 12, "white");
       let bullet = new entity_Bullet(
@@ -646,27 +801,6 @@ SOFTWARE
       bullet.fire({
         x: Math.cos((this.shootRotation * Math.PI) / 180),
         y: Math.sin((this.shootRotation * Math.PI) / 180),
-      });
-    }
-    processBullets(deltaTime) {
-      let _gthis = this;
-      let _this = this.bulletList;
-      let _g = [];
-      let _g1 = 0;
-      while (_g1 < _this.length) {
-        let v = _this[_g1];
-        ++_g1;
-        if (v.sprite.visible) {
-          _g.push(v);
-        }
-      }
-      this.bulletList = _g;
-      Lambda.iter(this.bulletList, function (bullet) {
-        bullet.update(deltaTime);
-        if (bullet.sprite.visible == false) {
-          _gthis.scene.removeChild(bullet.sprite);
-          bullet = null;
-        }
       });
     }
   }
@@ -906,7 +1040,7 @@ SOFTWARE
       this.scriptables.push(player);
     }
     createEnemies() {
-      let spawner = new entity_SpiralSpawner(this, 300, 300);
+      let spawner = new entity_LineSpawner(this, 300, 300);
       this.spawner = spawner;
       spawner.start();
     }
@@ -939,10 +1073,10 @@ SOFTWARE
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
         console.log(
-          "src/scene/SceneShooter.hx:98:",
+          "src/scene/SceneShooter.hx:102:",
           _gthis.backgroundParallax1
         );
-        console.log("src/scene/SceneShooter.hx:99:", "add parallax");
+        console.log("src/scene/SceneShooter.hx:103:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }

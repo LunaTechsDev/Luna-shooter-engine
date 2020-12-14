@@ -1,5 +1,9 @@
 package scene;
 
+import entity.LineSpawner;
+import entity.SpinningXSpawner;
+import entity.XSpawner;
+import entity.BulletSpawner;
 import entity.SpiralSpawner;
 import rm.core.TilingSprite;
 import rm.core.Input;
@@ -24,7 +28,7 @@ class SceneShooter extends Scene_Base {
   public var deltaTime: Float;
   public var scriptables: Array<Scriptable>;
   public var player: entity.Player;
-  public var spawner: SpiralSpawner;
+  public var spawner: BulletSpawner;
   public var backgroundSprite: Sprite;
   public var backgroundParallax1: TilingSprite;
   public var bossWindow: WindowBoss;
@@ -64,7 +68,7 @@ class SceneShooter extends Scene_Base {
   }
 
   public function createEnemies() {
-    var spawner = new SpiralSpawner(this, 300, 300);
+    var spawner = new LineSpawner(this, 300, 300);
     this.spawner = spawner;
     spawner.start();
   }
