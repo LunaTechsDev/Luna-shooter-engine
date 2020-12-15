@@ -5,8 +5,8 @@ import rm.scenes.Scene_Base;
 class VSpawner extends BulletSpawner {
   public var fireCooldown: Float;
 
-  public function new(scene: Scene_Base, posX: Int, posY: Int) {
-    super(posX, posY);
+  public function new(scene: Scene_Base, bulletImg: Bitmap, posX: Int, posY: Int) {
+    super(bulletImg, posX, posY);
     this.scene = scene;
     var spawnX = 10;
     var spawnY = 10;
@@ -21,7 +21,9 @@ class VSpawner extends BulletSpawner {
     if (this.fireCooldown <= 0) {
       var bulletSize = 12;
       var bulletImg = new Bitmap(bulletSize, bulletSize);
-      bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
+      // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
+      var bitmap = this.bulletImg;
+      bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, bulletSize, bulletSize);
 
       var bottomLeft = 225 + this.shootRotation;
       var bottomRight = 315 + this.shootRotation;

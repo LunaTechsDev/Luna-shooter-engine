@@ -1,5 +1,6 @@
 package entity;
 
+import rm.managers.ImageManager;
 import anim.Anim;
 import rm.core.Sprite;
 import rm.scenes.Scene_Base;
@@ -107,10 +108,23 @@ class Player extends entity.Character {
   public function processFiring() {
     if (Input.isTriggered(OK)) {
       var yOffset = 12;
-      var bulletSize = 12;
+      var bulletSize = 24;
       var bulletImg = new Bitmap(bulletSize, bulletSize);
-      bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
-
+      var playerBullet = ImageManager.loadPicture('player_bullet');
+      playerBullet.addLoadListener((bitmap) -> {
+        bulletImg.blt(
+          bitmap,
+          0,
+          0,
+          bitmap.width,
+          bitmap.height,
+          0,
+          0,
+          bulletSize,
+          bulletSize
+        );
+      });
+      // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
       var bullet = new Bullet(cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
 
       var scene: Scene_Base = SceneManager.currentScene;

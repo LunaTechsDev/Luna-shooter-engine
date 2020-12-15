@@ -6,6 +6,12 @@ class BulletSpawner extends Node2D {
   public var shootDirection: Position;
   public var shootRotation: Float;
   public var bulletList: Array<Bullet>;
+  public var bulletImg: Bitmap;
+
+  public function new(bulletImg: Bitmap, posX: Float, posY: Float) {
+    super(cast posX, cast posY);
+    this.bulletImg = bulletImg;
+  }
 
   public function start() {
     this.isStarted = true;

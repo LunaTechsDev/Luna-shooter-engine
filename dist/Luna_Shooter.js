@@ -460,8 +460,9 @@ SOFTWARE
 
   entity_Bullet.__name__ = true;
   class entity_BulletSpawner extends entity_Node2D {
-    constructor(posX, posY) {
+    constructor(bulletImg, posX, posY) {
       super(posX, posY);
+      this.bulletImg = bulletImg;
     }
     start() {
       this.isStarted = true;
@@ -526,8 +527,8 @@ SOFTWARE
 
   entity_Character.__name__ = true;
   class entity_LineSpawner extends entity_BulletSpawner {
-    constructor(scene, posX, posY) {
-      super(posX, posY);
+    constructor(scene, bulletImg, posX, posY) {
+      super(bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -538,7 +539,8 @@ SOFTWARE
     spawnBullet(deltaTime) {
       if (this.fireCooldown <= 0) {
         let bulletImg = new Bitmap(12, 12);
-        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bitmap = this.bulletImg;
+        bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
         let right = this.shootRotation;
         let left = 180 + this.shootRotation;
         let angleList = [right, left];
@@ -661,8 +663,22 @@ SOFTWARE
     }
     processFiring() {
       if (Input.isTriggered("ok")) {
-        let bulletImg = new Bitmap(12, 12);
-        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bulletSize = 24;
+        let bulletImg = new Bitmap(bulletSize, bulletSize);
+        let playerBullet = ImageManager.loadPicture("player_bullet");
+        playerBullet.addLoadListener(function (bitmap) {
+          bulletImg.blt(
+            bitmap,
+            0,
+            0,
+            bitmap.width,
+            bitmap.height,
+            0,
+            0,
+            bulletSize,
+            bulletSize
+          );
+        });
         let bullet = new entity_Bullet(this.pos.x, this.pos.y - 12, bulletImg);
         let scene = SceneManager._scene;
         scene.addChild(bullet.sprite);
@@ -748,8 +764,8 @@ SOFTWARE
 
   entity_Player.__name__ = true;
   class entity_XSpawner extends entity_BulletSpawner {
-    constructor(scene, posX, posY) {
-      super(posX, posY);
+    constructor(scene, bulletImg, posX, posY) {
+      super(bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -760,7 +776,8 @@ SOFTWARE
     spawnBullet(deltaTime) {
       if (this.fireCooldown <= 0) {
         let bulletImg = new Bitmap(12, 12);
-        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bitmap = this.bulletImg;
+        bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
         let angleList = [45, 125, 225, 315];
         let _g = 0;
         while (_g < angleList.length) {
@@ -791,13 +808,14 @@ SOFTWARE
 
   entity_XSpawner.__name__ = true;
   class entity_SpinningXSpawner extends entity_XSpawner {
-    constructor(scene, posX, posY) {
-      super(scene, posX, posY);
+    constructor(scene, bulletImg, posX, posY) {
+      super(scene, bulletImg, posX, posY);
     }
     spawnBullet(deltaTime) {
       if (this.fireCooldown <= 0) {
         let bulletImg = new Bitmap(12, 12);
-        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bitmap = this.bulletImg;
+        bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
         let topRight = 45 + this.shootRotation;
         let topLeft = 125 + this.shootRotation;
         let bottomLeft = 225 + this.shootRotation;
@@ -827,8 +845,8 @@ SOFTWARE
 
   entity_SpinningXSpawner.__name__ = true;
   class entity_SpiralSpawner extends entity_BulletSpawner {
-    constructor(scene, posX, posY) {
-      super(posX, posY);
+    constructor(scene, bulletImg, posX, posY) {
+      super(bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -837,7 +855,8 @@ SOFTWARE
     }
     spawnBullet(deltaTime) {
       let bulletImg = new Bitmap(12, 12);
-      bulletImg.fillRect(0, 0, 12, 12, "white");
+      let bitmap = this.bulletImg;
+      bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
       let bullet = new entity_Bullet(
         this.spawnPoint.x,
         this.spawnPoint.y,
@@ -856,8 +875,8 @@ SOFTWARE
 
   entity_SpiralSpawner.__name__ = true;
   class entity_VSpawner extends entity_BulletSpawner {
-    constructor(scene, posX, posY) {
-      super(posX, posY);
+    constructor(scene, bulletImg, posX, posY) {
+      super(bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -868,7 +887,8 @@ SOFTWARE
     spawnBullet(deltaTime) {
       if (this.fireCooldown <= 0) {
         let bulletImg = new Bitmap(12, 12);
-        bulletImg.fillRect(0, 0, 12, 12, "white");
+        let bitmap = this.bulletImg;
+        bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
         let bottomLeft = 225 + this.shootRotation;
         let bottomRight = 315 + this.shootRotation;
         let angleList = [bottomLeft, bottomRight];
@@ -1134,9 +1154,16 @@ SOFTWARE
       this.scriptables.push(player);
     }
     createEnemies() {
-      let spawner = new entity_VSpawner(this, 300, 300);
-      this.spawner = spawner;
-      spawner.start();
+      let enemyBullet = ImageManager.loadPicture("enemy_bullet2full");
+      let _gthis = this;
+      enemyBullet.addLoadListener(function (bitmap) {
+        let spawner = new entity_SpinningXSpawner(_gthis, bitmap, 300, 300);
+        let secondSpawner = new entity_XSpawner(_gthis, bitmap, 300, 300);
+        _gthis.spawner = spawner;
+        _gthis.spawnerTwo = secondSpawner;
+        spawner.start();
+        secondSpawner.start();
+      });
     }
     create() {
       super.create();
@@ -1146,8 +1173,8 @@ SOFTWARE
       this.createAllWindows();
       if (LunaShooter.Params.debugCollider) {
         this.createColliderDebugSprite();
-        this.createScreenSprite();
       }
+      this.createScreenSprite();
     }
     createBackground() {
       this.backgroundSprite = new Sprite();
@@ -1167,10 +1194,10 @@ SOFTWARE
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
         console.log(
-          "src/scene/SceneShooter.hx:103:",
+          "src/scene/SceneShooter.hx:110:",
           _gthis.backgroundParallax1
         );
-        console.log("src/scene/SceneShooter.hx:104:", "add parallax");
+        console.log("src/scene/SceneShooter.hx:111:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }
@@ -1208,6 +1235,7 @@ SOFTWARE
       this.updateBossWindow();
       systems_CollisionSystem.update();
       this.spawner.update(this.deltaTime);
+      this.spawnerTwo.update(this.deltaTime);
       this.timeStamp = LunaSceneShooter.performance.now();
       this.paint();
     }

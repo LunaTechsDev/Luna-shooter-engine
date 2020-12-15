@@ -30,6 +30,7 @@ class SceneShooter extends Scene_Base {
   public var scriptables: Array<Scriptable>;
   public var player: entity.Player;
   public var spawner: BulletSpawner;
+  public var spawnerTwo: BulletSpawner;
   public var backgroundSprite: Sprite;
   public var backgroundParallax1: TilingSprite;
   public var bossWindow: WindowBoss;
@@ -69,9 +70,15 @@ class SceneShooter extends Scene_Base {
   }
 
   public function createEnemies() {
-    var spawner = new VSpawner(this, 300, 300);
-    this.spawner = spawner;
-    spawner.start();
+    var enemyBullet = ImageManager.loadPicture('enemy_bullet2full');
+    enemyBullet.addLoadListener((bitmap) -> {
+      var spawner = new SpinningXSpawner(this, bitmap, 300, 300);
+      var secondSpawner = new XSpawner(this, bitmap, 300, 300);
+      this.spawner = spawner;
+      this.spawnerTwo = secondSpawner;
+      spawner.start();
+      secondSpawner.start();
+    });
   }
 
   public override function create() {
@@ -82,8 +89,8 @@ class SceneShooter extends Scene_Base {
     this.createAllWindows();
     if (Main.Params.debugCollider) {
       this.createColliderDebugSprite();
-      this.createScreenSprite();
     }
+    this.createScreenSprite();
   }
 
   public function createBackground() {
@@ -137,6 +144,7 @@ class SceneShooter extends Scene_Base {
     this.updateBossWindow();
     CollisionSystem.update();
     this.spawner.update(this.deltaTime);
+    this.spawnerTwo.update(this.deltaTime);
     timeStamp = performance.now();
     this.paint();
   }
