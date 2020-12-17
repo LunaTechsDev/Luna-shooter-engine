@@ -2,7 +2,6 @@ package entity;
 
 import rm.managers.ImageManager;
 import anim.Anim;
-import rm.core.Sprite;
 import rm.scenes.Scene_Base;
 import rm.managers.SceneManager;
 import rm.core.Graphics;
@@ -15,10 +14,7 @@ using ext.CharacterExt;
 class Player extends entity.Character {
   public var player: Character;
   public var initialSpeed: Int;
-  public var speed: Int;
   public var dir: {x: Int, y: Int};
-  public var collider: Collider;
-  public var hpGauge: SpriteGauge;
   public var playerImg: Bitmap;
   public var bulletList: Array<Bullet>;
   public var initialBoostCD: Float;
@@ -28,9 +24,12 @@ class Player extends entity.Character {
   public var playerCoordTrail: Array<Position>;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
-    super(posX, posY);
-    this.player = characterData;
-    this.playerImg = playerImage;
+    super(posX, posY, characterData);
+    // Initialize Important information to be passed to character
+    // initialization.
+    // this.player = characterData;
+    this.layer = PLAYER;
+    this.charImg = playerImage;
     this.playerCoordTrail = [];
     this.initialize();
   }
@@ -44,13 +43,7 @@ class Player extends entity.Character {
     this.initialSpeed = 400;
     this.speed = 400;
     this.dir = { x: 0, y: 0 };
-    this.playerImg.addLoadListener((bitmap: Bitmap) -> {
-      this.sprite = new Sprite(bitmap);
-      this.collider = new Collider(PLAYER, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
-      CollisionSystem.addCollider(this.collider);
-      this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
-      this.sprite.addChild(this.hpGauge);
-    });
+
     this.damageAnim = new Anim(this.sprite, (sprite, dt) -> {
       if (Graphics.frameCount % 30 == 0) {
         this.sprite.visible = true;
@@ -65,20 +58,13 @@ class Player extends entity.Character {
 
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
-    this.processHp();
     this.processBullets(deltaTime);
     this.processFiring();
     this.processMovement(deltaTime);
     this.processBoosting(deltaTime);
     this.processCoordTrail();
     this.processBoundingBox();
-    this.processCollider();
     this.processCollision();
-    this.processSprite();
-  }
-
-  public function processHp() {
-    this.hpGauge.updateGauge(this.player.hpRate());
   }
 
   public function processBullets(deltaTime: Float) {
@@ -125,7 +111,7 @@ class Player extends entity.Character {
         );
       });
       // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
-      var bullet = new Bullet(cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
+      var bullet = new Bullet(PLAYERBULLET, cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
 
       var scene: Scene_Base = SceneManager.currentScene;
       scene.addChild(bullet.sprite);
@@ -179,15 +165,10 @@ class Player extends entity.Character {
     this.pos.y = this.pos.y.clampf(0, Graphics.boxHeight - this.collider.height);
   }
 
-  public function processCollider() {
-    this.collider.x = this.pos.x;
-    this.collider.y = this.pos.y;
-  }
-
   public function processCollision() {
     for (collision in this.collider.collisions) {
       switch (collision.layer) {
-        case BULLET:
+        case ENEMYBULLET:
           // Do something
           this.takeDamage();
         case ENEMY:
@@ -196,11 +177,6 @@ class Player extends entity.Character {
           // Default do nothing
       }
     }
-  }
-
-  public function processSprite() {
-    this.sprite.x = this.pos.x;
-    this.sprite.y = this.pos.y;
   }
 
   public override function destroy() {

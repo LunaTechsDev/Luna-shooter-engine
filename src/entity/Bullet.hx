@@ -4,13 +4,15 @@ import rm.core.Graphics;
 
 class Bullet extends Node2D {
   public var sprite: Sprite;
+  public var layer: CollisionLayer;
   public var speed: Int;
   public var dir: {x: Int, y: Int};
   public var collider: Collider;
   public var bulletImage: Bitmap;
 
-  public function new(posX: Int, posY: Int, bulletImage: Bitmap) {
+  public function new(layer: CollisionLayer, posX: Int, posY: Int, bulletImage: Bitmap) {
     super(posX, posY);
+    this.layer = layer;
     this.bulletImage = bulletImage;
     this.initialize();
   }
@@ -24,7 +26,7 @@ class Bullet extends Node2D {
       this.sprite = new Sprite(bitmap);
       this.sprite.x = this.pos.x;
       this.sprite.y = this.pos.y;
-      this.collider = new Collider(BULLET, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      this.collider = new Collider(this.layer, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
       CollisionSystem.addCollider(this.collider);
     });
   }

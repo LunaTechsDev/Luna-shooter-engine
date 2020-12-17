@@ -1,5 +1,6 @@
 package scene;
 
+import entity.WhiteKnight;
 import entity.VSpawner;
 import entity.LineSpawner;
 import entity.SpinningXSpawner;
@@ -29,6 +30,7 @@ class SceneShooter extends Scene_Base {
   public var deltaTime: Float;
   public var scriptables: Array<Scriptable>;
   public var player: entity.Player;
+  public var boss: entity.Enemy;
   public var spawner: BulletSpawner;
   public var spawnerTwo: BulletSpawner;
   public var backgroundSprite: Sprite;
@@ -70,15 +72,32 @@ class SceneShooter extends Scene_Base {
   }
 
   public function createEnemies() {
-    var enemyBullet = ImageManager.loadPicture('enemy_bullet2full');
-    enemyBullet.addLoadListener((bitmap) -> {
-      var spawner = new SpinningXSpawner(this, bitmap, 300, 300);
-      var secondSpawner = new XSpawner(this, bitmap, 300, 300);
-      this.spawner = spawner;
-      this.spawnerTwo = secondSpawner;
-      spawner.start();
-      secondSpawner.start();
-    });
+    this.createBoss();
+    // var enemyBullet = ImageManager.loadPicture('enemy_bullet2full');
+    // enemyBullet.addLoadListener((bitmap) -> {
+    //   var spawner = new SpinningXSpawner(this, bitmap, 300, 300);
+    //   var secondSpawner = new XSpawner(this, bitmap, 300, 300);
+    //   this.spawner = spawner;
+    //   this.spawnerTwo = secondSpawner;
+    //   spawner.start();
+    //   secondSpawner.start();
+    // });
+  }
+
+  public function createBoss() {
+    var bossData: Enemy = {
+      atk: 5,
+      def: 2,
+      hp: 200,
+      maxHp: 200,
+      isEnemy: true,
+      name: 'White Knight'
+    };
+    var bitmap = new Bitmap(50, 50);
+    bitmap.fillRect(0, 0, 50, 50, 'black');
+    this.boss = new WhiteKnight(300, 100, bossData, bitmap);
+    this.addChild(this.boss.sprite);
+    this.scriptables.push(this.boss);
   }
 
   public override function create() {
@@ -143,8 +162,8 @@ class SceneShooter extends Scene_Base {
     this.updateParallax();
     this.updateBossWindow();
     CollisionSystem.update();
-    this.spawner.update(this.deltaTime);
-    this.spawnerTwo.update(this.deltaTime);
+    // this.spawner.update(this.deltaTime);
+    // this.spawnerTwo.update(this.deltaTime);
     timeStamp = performance.now();
     this.paint();
   }

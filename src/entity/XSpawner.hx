@@ -5,8 +5,8 @@ import rm.scenes.Scene_Base;
 class XSpawner extends BulletSpawner {
   public var fireCooldown: Float;
 
-  public function new(scene: Scene_Base, bulletImg: Bitmap, posX: Int, posY: Int) {
-    super(bulletImg, posX, posY);
+  public function new(layer: CollisionLayer, scene: Scene_Base, bulletImg: Bitmap, posX: Int, posY: Int) {
+    super(layer, bulletImg, posX, posY);
     this.scene = scene;
     var spawnX = 10;
     var spawnY = 10;
@@ -31,7 +31,7 @@ class XSpawner extends BulletSpawner {
       var bottomRight = 315;
       var angleList = [topRight, topLeft, bottomLeft, bottomRight];
       for (angle in angleList) {
-        var bullet = new Bullet(cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
+        var bullet = new Bullet(this.layer, cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
         bullet.speed = 200;
         this.scene.addChild(bullet.sprite);
         this.bulletList.push(bullet);

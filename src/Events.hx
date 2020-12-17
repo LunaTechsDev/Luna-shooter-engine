@@ -16,3 +16,9 @@ enum abstract AnimEvents(String) from String to String {
   public var START = 'start';
   public var STOP = 'stop';
 }
+
+enum abstract StateEvents(String) from String to String {
+  public var ENTERSTATE = 'enterState';
+  public var TRANSITION = 'transition';
+  public var EXITSTATE = 'exitState';
+}

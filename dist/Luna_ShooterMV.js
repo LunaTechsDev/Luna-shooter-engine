@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/14/2020
+ *  Build Date: 12/16/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -378,6 +378,28 @@ SOFTWARE
   }
 
   Scriptable.__name__ = true;
+  class LNState extends PIXI.utils.EventEmitter {
+    constructor(state) {
+      super();
+      this.currentState = state;
+      this.emit("enterState" + this.currentState);
+    }
+    transitionTo(state) {
+      this.emit("exitState" + this.currentState);
+      this.currentState = state;
+      this.emit("enterState" + this.currentState);
+    }
+    update() {
+      this.emit(this.currentState);
+    }
+    static create(state) {
+      let stateMachine = new LNState(state);
+      return stateMachine;
+    }
+  }
+
+  $hx_exports["LNState"] = LNState;
+  LNState.__name__ = true;
   class entity_Node2D extends Scriptable {
     constructor(posX, posY) {
       super();
@@ -387,8 +409,9 @@ SOFTWARE
 
   entity_Node2D.__name__ = true;
   class entity_Bullet extends entity_Node2D {
-    constructor(posX, posY, bulletImage) {
+    constructor(layer, posX, posY, bulletImage) {
       super(posX, posY);
+      this.layer = layer;
       this.bulletImage = bulletImage;
       this.initialize();
     }
@@ -402,7 +425,7 @@ SOFTWARE
         _gthis.sprite.x = _gthis.pos.x;
         _gthis.sprite.y = _gthis.pos.y;
         _gthis.collider = new core_Collider(
-          "bullet",
+          _gthis.layer,
           _gthis.pos.x,
           _gthis.pos.y,
           bitmap.width,
@@ -460,12 +483,10 @@ SOFTWARE
 
   entity_Bullet.__name__ = true;
   class entity_BulletSpawner extends entity_Node2D {
-    constructor(bulletImg, posX, posY) {
+    constructor(layer, bulletImg, posX, posY) {
       super(posX, posY);
+      this.layer = layer;
       this.bulletImg = bulletImg;
-    }
-    start() {
-      this.isStarted = true;
     }
     update(deltaTime) {
       if (this.isStarted) {
@@ -499,11 +520,26 @@ SOFTWARE
 
   entity_BulletSpawner.__name__ = true;
   class entity_Character extends entity_Node2D {
-    constructor(posX, posY) {
+    constructor(posX, posY, characterData) {
       super(posX, posY);
+      this.char = characterData;
     }
     initialize() {
       this.damageAnimTime = 0;
+      let _gthis = this;
+      this.charImg.addLoadListener(function (bitmap) {
+        _gthis.sprite = new Sprite(bitmap);
+        _gthis.collider = new core_Collider(
+          _gthis.layer,
+          _gthis.pos.x,
+          _gthis.pos.y,
+          bitmap.width,
+          bitmap.height
+        );
+        systems_CollisionSystem.addCollider(_gthis.collider);
+        _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
+        _gthis.sprite.addChild(_gthis.hpGauge);
+      });
     }
     takeDamage() {
       this.damageAnimTime = LunaShooter.Params.damageFlashTime;
@@ -514,6 +550,9 @@ SOFTWARE
       if (this.damageAnim != null && this.damageAnim.isStarted) {
         this.processDamage(deltaTime);
       }
+      this.processHp();
+      this.processCollider();
+      this.processSprite();
     }
     processDamage(deltaTime) {
       if (this.damageAnimTime > 0) {
@@ -523,12 +562,33 @@ SOFTWARE
         this.damageAnim.stop();
       }
     }
+    processHp() {
+      let char = this.char;
+      this.hpGauge.updateGauge(char.hp / char.maxHp);
+    }
+    processCollider() {
+      this.collider.x = this.pos.x;
+      this.collider.y = this.pos.y;
+    }
+    processSprite() {
+      this.sprite.x = this.pos.x;
+      this.sprite.y = this.pos.y;
+    }
   }
 
   entity_Character.__name__ = true;
+  class entity_Enemy extends entity_Character {
+    constructor(posX, posY, characterData, enemyImg) {
+      super(posX, posY, characterData);
+      this.layer = "enemy";
+      this.charImg = enemyImg;
+    }
+  }
+
+  entity_Enemy.__name__ = true;
   class entity_LineSpawner extends entity_BulletSpawner {
-    constructor(scene, bulletImg, posX, posY) {
-      super(bulletImg, posX, posY);
+    constructor(layer, scene, bulletImg, posX, posY) {
+      super(layer, bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -549,6 +609,7 @@ SOFTWARE
           let angle = angleList[_g];
           ++_g;
           let bullet = new entity_Bullet(
+            this.layer,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
@@ -576,9 +637,9 @@ SOFTWARE
   entity_LineSpawner.__name__ = true;
   class entity_Player extends entity_Character {
     constructor(posX, posY, characterData, playerImage) {
-      super(posX, posY);
-      this.player = characterData;
-      this.playerImg = playerImage;
+      super(posX, posY, characterData);
+      this.layer = "player";
+      this.charImg = playerImage;
       this.playerCoordTrail = [];
       this.initialize();
     }
@@ -592,19 +653,6 @@ SOFTWARE
       this.speed = 400;
       this.dir = { x: 0, y: 0 };
       let _gthis = this;
-      this.playerImg.addLoadListener(function (bitmap) {
-        _gthis.sprite = new Sprite(bitmap);
-        _gthis.collider = new core_Collider(
-          "player",
-          _gthis.pos.x,
-          _gthis.pos.y,
-          bitmap.width,
-          bitmap.height
-        );
-        systems_CollisionSystem.addCollider(_gthis.collider);
-        _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
-        _gthis.sprite.addChild(_gthis.hpGauge);
-      });
       this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
         if (Graphics.frameCount % 30 == 0) {
           _gthis.sprite.visible = true;
@@ -618,20 +666,13 @@ SOFTWARE
     }
     update(deltaTime) {
       super.update(deltaTime);
-      this.processHp();
       this.processBullets(deltaTime);
       this.processFiring();
       this.processMovement(deltaTime);
       this.processBoosting(deltaTime);
       this.processCoordTrail();
       this.processBoundingBox();
-      this.processCollider();
       this.processCollision();
-      this.processSprite();
-    }
-    processHp() {
-      let char = this.player;
-      this.hpGauge.updateGauge(char.hp / char.maxHp);
     }
     processBullets(deltaTime) {
       let _this = this.bulletList;
@@ -679,7 +720,12 @@ SOFTWARE
             bulletSize
           );
         });
-        let bullet = new entity_Bullet(this.pos.x, this.pos.y - 12, bulletImg);
+        let bullet = new entity_Bullet(
+          "playerBullet",
+          this.pos.x,
+          this.pos.y - 12,
+          bulletImg
+        );
         let scene = SceneManager._scene;
         scene.addChild(bullet.sprite);
         this.bulletList.push(bullet);
@@ -731,10 +777,6 @@ SOFTWARE
         Graphics.boxHeight - this.collider.height
       );
     }
-    processCollider() {
-      this.collider.x = this.pos.x;
-      this.collider.y = this.pos.y;
-    }
     processCollision() {
       let _g = 0;
       let _g1 = this.collider.collisions;
@@ -742,19 +784,15 @@ SOFTWARE
         let collision = _g1[_g];
         ++_g;
         switch (collision.layer) {
-          case "bullet":
+          case "enemy":
             this.takeDamage();
             break;
-          case "enemy":
+          case "enemyBullet":
             this.takeDamage();
             break;
           default:
         }
       }
-    }
-    processSprite() {
-      this.sprite.x = this.pos.x;
-      this.sprite.y = this.pos.y;
     }
     destroy() {
       super.destroy();
@@ -764,8 +802,8 @@ SOFTWARE
 
   entity_Player.__name__ = true;
   class entity_XSpawner extends entity_BulletSpawner {
-    constructor(scene, bulletImg, posX, posY) {
-      super(bulletImg, posX, posY);
+    constructor(layer, scene, bulletImg, posX, posY) {
+      super(layer, bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -784,6 +822,7 @@ SOFTWARE
           let angle = angleList[_g];
           ++_g;
           let bullet = new entity_Bullet(
+            this.layer,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
@@ -808,8 +847,8 @@ SOFTWARE
 
   entity_XSpawner.__name__ = true;
   class entity_SpinningXSpawner extends entity_XSpawner {
-    constructor(scene, bulletImg, posX, posY) {
-      super(scene, bulletImg, posX, posY);
+    constructor(layer, scene, bulletImg, posX, posY) {
+      super(layer, scene, bulletImg, posX, posY);
     }
     spawnBullet(deltaTime) {
       if (this.fireCooldown <= 0) {
@@ -826,6 +865,7 @@ SOFTWARE
           let angle = angleList[_g];
           ++_g;
           let bullet = new entity_Bullet(
+            this.layer,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
@@ -845,8 +885,8 @@ SOFTWARE
 
   entity_SpinningXSpawner.__name__ = true;
   class entity_SpiralSpawner extends entity_BulletSpawner {
-    constructor(scene, bulletImg, posX, posY) {
-      super(bulletImg, posX, posY);
+    constructor(layer, scene, bulletImg, posX, posY) {
+      super(layer, bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -858,6 +898,7 @@ SOFTWARE
       let bitmap = this.bulletImg;
       bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, 12, 12);
       let bullet = new entity_Bullet(
+        this.layer,
         this.spawnPoint.x,
         this.spawnPoint.y,
         bulletImg
@@ -875,8 +916,8 @@ SOFTWARE
 
   entity_SpiralSpawner.__name__ = true;
   class entity_VSpawner extends entity_BulletSpawner {
-    constructor(scene, bulletImg, posX, posY) {
-      super(bulletImg, posX, posY);
+    constructor(layer, scene, bulletImg, posX, posY) {
+      super(layer, bulletImg, posX, posY);
       this.scene = scene;
       this.spawnPoint = { x: this.pos.x + 10, y: this.pos.y + 10 };
       this.shootDirection = { x: 1, y: 1 };
@@ -897,6 +938,7 @@ SOFTWARE
           let angle = angleList[_g];
           ++_g;
           let bullet = new entity_Bullet(
+            this.layer,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
@@ -920,6 +962,79 @@ SOFTWARE
   }
 
   entity_VSpawner.__name__ = true;
+  class entity_WhiteKnight extends entity_Enemy {
+    constructor(posX, posY, characterData, enemyImage) {
+      super(posX, posY, characterData, enemyImage);
+      this.initialize();
+    }
+    initialize() {
+      super.initialize();
+      this.speed = 200;
+      this.state = LNState.create("idle");
+      this.setupStates();
+      this.state.transitionTo("idle");
+      let _gthis = this;
+      this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
+        if (Graphics.frameCount % 30 == 0) {
+          _gthis.sprite.visible = true;
+        } else if (Graphics.frameCount % 15 == 0) {
+          _gthis.sprite.visible = false;
+        }
+      });
+      this.damageAnim.on("stop", function (anim) {
+        _gthis.sprite.visible = true;
+      });
+    }
+    setupStates() {
+      let _gthis = this;
+      this.state.on("enterState" + "idle", function () {
+        _gthis.sprite.bitmap.fillRect(0, 0, 50, 50, "blue");
+      });
+      this.state.on("enterState" + "pattern1", function () {
+        _gthis.sprite.bitmap.fillRect(0, 0, 50, 50, "green");
+      });
+    }
+    update(deltaTime) {
+      super.update(deltaTime);
+      this.processBossPattern();
+      this.processBoundingBox();
+      this.processCollision();
+    }
+    processBossPattern() {}
+    processBoundingBox() {
+      this.pos.x = Math.min(
+        Math.max(this.pos.x, 0),
+        Graphics.boxWidth - this.collider.width
+      );
+      this.pos.y = Math.min(
+        Math.max(this.pos.y, 0),
+        Graphics.boxHeight - this.collider.height
+      );
+    }
+    processCollision() {
+      let _g = 0;
+      let _g1 = this.collider.collisions;
+      while (_g < _g1.length) {
+        let collision = _g1[_g];
+        ++_g;
+        switch (collision.layer) {
+          case "player":
+            this.takeDamage();
+            break;
+          case "playerBullet":
+            this.takeDamage();
+            break;
+          default:
+        }
+      }
+    }
+    destroy() {
+      super.destroy();
+      this.sprite.visible = false;
+    }
+  }
+
+  entity_WhiteKnight.__name__ = true;
   class ext_BitmapExt {
     static lineTo(bitmap, strokeStyle, x1, y1, x2, y2) {
       let context = bitmap.context;
@@ -1154,16 +1269,22 @@ SOFTWARE
       this.scriptables.push(player);
     }
     createEnemies() {
-      let enemyBullet = ImageManager.loadPicture("enemy_bullet2full");
-      let _gthis = this;
-      enemyBullet.addLoadListener(function (bitmap) {
-        let spawner = new entity_SpinningXSpawner(_gthis, bitmap, 300, 300);
-        let secondSpawner = new entity_XSpawner(_gthis, bitmap, 300, 300);
-        _gthis.spawner = spawner;
-        _gthis.spawnerTwo = secondSpawner;
-        spawner.start();
-        secondSpawner.start();
-      });
+      this.createBoss();
+    }
+    createBoss() {
+      let bossData = {
+        atk: 5,
+        def: 2,
+        hp: 200,
+        maxHp: 200,
+        isEnemy: true,
+        name: "White Knight",
+      };
+      let bitmap = new Bitmap(50, 50);
+      bitmap.fillRect(0, 0, 50, 50, "black");
+      this.boss = new entity_WhiteKnight(300, 100, bossData, bitmap);
+      this.addChild(this.boss.sprite);
+      this.scriptables.push(this.boss);
     }
     create() {
       super.create();
@@ -1194,10 +1315,10 @@ SOFTWARE
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
         console.log(
-          "src/scene/SceneShooter.hx:110:",
+          "src/scene/SceneShooter.hx:129:",
           _gthis.backgroundParallax1
         );
-        console.log("src/scene/SceneShooter.hx:111:", "add parallax");
+        console.log("src/scene/SceneShooter.hx:130:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }
@@ -1234,8 +1355,6 @@ SOFTWARE
       this.updateParallax();
       this.updateBossWindow();
       systems_CollisionSystem.update();
-      this.spawner.update(this.deltaTime);
-      this.spawnerTwo.update(this.deltaTime);
       this.timeStamp = LunaSceneShooter.performance.now();
       this.paint();
     }
