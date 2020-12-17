@@ -26,6 +26,7 @@ class SpinningXSpawner extends XSpawner {
         this.scene.addChild(bullet.sprite);
         this.bulletList.push(bullet);
         bullet.fire(createRotationVector(angle));
+        trace(bullet.pos.y);
       }
       this.shootRotation += 15;
       this.fireCooldown = 0.25;

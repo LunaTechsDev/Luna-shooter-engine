@@ -95,7 +95,7 @@ class SceneShooter extends Scene_Base {
     };
     var bitmap = new Bitmap(50, 50);
     bitmap.fillRect(0, 0, 50, 50, 'black');
-    this.boss = new WhiteKnight(300, 100, bossData, bitmap);
+    this.boss = new WhiteKnight(this, 300, 100, bossData, bitmap);
     this.addChild(this.boss.sprite);
     this.scriptables.push(this.boss);
   }

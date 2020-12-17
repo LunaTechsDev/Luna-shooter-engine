@@ -1,5 +1,8 @@
 package entity;
 
+import rm.scenes.Scene_Base;
+import rm.managers.SceneManager;
+import rm.managers.ImageManager;
 import anim.Anim;
 import rm.core.Graphics;
 import core.State;
@@ -21,15 +24,19 @@ enum abstract WKState(String) from String to String {
 
 class WhiteKnight extends entity.Enemy {
   public var state: State;
+  public var spawner: BulletSpawner;
+  public var spawnerTwo: BulletSpawner;
 
-  public function new(posX: Int, posY: Int, characterData: Character, enemyImage: Bitmap) {
+  public function new(scene: Scene_Base, posX: Int, posY: Int, characterData: Character, enemyImage: Bitmap) {
     super(posX, posY, characterData, enemyImage);
+    this.scene = scene;
     this.initialize();
   }
 
   public override function initialize() {
     super.initialize();
     this.speed = 200;
+    this.createSpawners();
     this.state = State.create(IDLE);
     this.setupStates();
     this.state.transitionTo(IDLE);
@@ -54,14 +61,33 @@ class WhiteKnight extends entity.Enemy {
 
     this.state.on(enter + PATTERN1, () -> {
       this.sprite.bitmap.fillRect(0, 0, 50, 50, 'green');
+      this.spawner.start();
+    });
+  }
+
+  public function createSpawners() {
+    var enemyBullet = ImageManager.loadPicture('enemy_bullet2full');
+    var spawnerX = this.pos.x;
+    var spawnerY = this.pos.y;
+    enemyBullet.addLoadListener((bitmap) -> {
+      var spawner = new SpinningXSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
+      var secondSpawner = new XSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
+      this.spawner = spawner;
+      this.spawnerTwo = secondSpawner;
     });
   }
 
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
+    this.processSpawners(deltaTime);
     this.processBossPattern();
     this.processBoundingBox();
     this.processCollision();
+  }
+
+  public function processSpawners(deltaTime) {
+    this.spawner.update(deltaTime);
+    this.spawnerTwo.update(deltaTime);
   }
 
   public function processBossPattern() {}

@@ -488,6 +488,9 @@ SOFTWARE
       this.layer = layer;
       this.bulletImg = bulletImg;
     }
+    start() {
+      this.isStarted = true;
+    }
     update(deltaTime) {
       if (this.isStarted) {
         this.spawnBullet(deltaTime);
@@ -874,6 +877,7 @@ SOFTWARE
           this.scene.addChild(bullet.sprite);
           this.bulletList.push(bullet);
           bullet.fire(this.createRotationVector(angle));
+          console.log("src/entity/SpinningXSpawner.hx:29:", bullet.pos.y);
         }
         this.shootRotation += 15;
         this.fireCooldown = 0.25;
@@ -963,13 +967,15 @@ SOFTWARE
 
   entity_VSpawner.__name__ = true;
   class entity_WhiteKnight extends entity_Enemy {
-    constructor(posX, posY, characterData, enemyImage) {
+    constructor(scene, posX, posY, characterData, enemyImage) {
       super(posX, posY, characterData, enemyImage);
+      this.scene = scene;
       this.initialize();
     }
     initialize() {
       super.initialize();
       this.speed = 200;
+      this.createSpawners();
       this.state = LNState.create("idle");
       this.setupStates();
       this.state.transitionTo("idle");
@@ -992,13 +998,43 @@ SOFTWARE
       });
       this.state.on("enterState" + "pattern1", function () {
         _gthis.sprite.bitmap.fillRect(0, 0, 50, 50, "green");
+        _gthis.spawner.start();
+      });
+    }
+    createSpawners() {
+      let enemyBullet = ImageManager.loadPicture("enemy_bullet2full");
+      let spawnerX = this.pos.x;
+      let spawnerY = this.pos.y;
+      let _gthis = this;
+      enemyBullet.addLoadListener(function (bitmap) {
+        let spawner = new entity_SpinningXSpawner(
+          "enemyBullet",
+          _gthis.scene,
+          bitmap,
+          spawnerX,
+          spawnerY
+        );
+        let secondSpawner = new entity_XSpawner(
+          "enemyBullet",
+          _gthis.scene,
+          bitmap,
+          spawnerX,
+          spawnerY
+        );
+        _gthis.spawner = spawner;
+        _gthis.spawnerTwo = secondSpawner;
       });
     }
     update(deltaTime) {
       super.update(deltaTime);
+      this.processSpawners(deltaTime);
       this.processBossPattern();
       this.processBoundingBox();
       this.processCollision();
+    }
+    processSpawners(deltaTime) {
+      this.spawner.update(deltaTime);
+      this.spawnerTwo.update(deltaTime);
     }
     processBossPattern() {}
     processBoundingBox() {
@@ -1282,7 +1318,7 @@ SOFTWARE
       };
       let bitmap = new Bitmap(50, 50);
       bitmap.fillRect(0, 0, 50, 50, "black");
-      this.boss = new entity_WhiteKnight(300, 100, bossData, bitmap);
+      this.boss = new entity_WhiteKnight(this, 300, 100, bossData, bitmap);
       this.addChild(this.boss.sprite);
       this.scriptables.push(this.boss);
     }
