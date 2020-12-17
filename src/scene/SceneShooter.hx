@@ -1,12 +1,7 @@
 package scene;
 
 import entity.WhiteKnight;
-import entity.VSpawner;
-import entity.LineSpawner;
-import entity.SpinningXSpawner;
-import entity.XSpawner;
 import entity.BulletSpawner;
-import entity.SpiralSpawner;
 import rm.core.TilingSprite;
 import rm.core.Input;
 import rm.managers.SceneManager;

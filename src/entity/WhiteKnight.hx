@@ -20,12 +20,16 @@ enum abstract WKState(String) from String to String {
   public var PATTERN1 = 'pattern1';
 
   public var PATTERN2 = 'pattern2';
+  public var DEATH = 'death';
 }
 
 class WhiteKnight extends entity.Enemy {
   public var state: State;
   public var spawner: BulletSpawner;
   public var spawnerTwo: BulletSpawner;
+  public var dir: Position;
+  public var deltaTime: Float;
+  public var moveTimer: Float;
 
   public function new(scene: Scene_Base, posX: Int, posY: Int, characterData: Character, enemyImage: Bitmap) {
     super(posX, posY, characterData, enemyImage);
@@ -35,6 +39,9 @@ class WhiteKnight extends entity.Enemy {
 
   public override function initialize() {
     super.initialize();
+    // MoveTimer = 2.5;
+    this.moveTimer = 2.5;
+    this.dir = { x: 0, y: 0 };
     this.speed = 200;
     this.createSpawners();
     this.state = State.create(IDLE);
@@ -59,9 +66,25 @@ class WhiteKnight extends entity.Enemy {
       this.sprite.bitmap.fillRect(0, 0, 50, 50, 'blue');
     });
 
+    // Starting Pattern for normal hp
     this.state.on(enter + PATTERN1, () -> {
+      this.dir.x = -1;
       this.sprite.bitmap.fillRect(0, 0, 50, 50, 'green');
       this.spawner.start();
+    });
+
+    this.state.on(PATTERN1, () -> {
+      this.pattern1();
+    });
+
+    // Low Hp
+    this.state.on(enter + PATTERN2, () -> {
+      this.sprite.bitmap.fillRect(0, 0, 50, 50, 'pink');
+      this.spawnerTwo.start();
+    });
+
+    this.state.on(PATTERN2, () -> {
+      this.pattern2();
     });
   }
 
@@ -86,11 +109,37 @@ class WhiteKnight extends entity.Enemy {
   }
 
   public function processSpawners(deltaTime) {
+    this.deltaTime = deltaTime;
     this.spawner.update(deltaTime);
     this.spawnerTwo.update(deltaTime);
   }
 
-  public function processBossPattern() {}
+  public function processBossPattern() {
+    this.state.update();
+  }
+
+  public function pattern1() {
+    if (this.moveTimer <= 0) {
+      this.dir.x = this.dir.x * -1;
+      this.moveTimer = 2.5;
+    } else {
+      this.moveTimer -= this.deltaTime;
+    }
+    var xMove = this.dir.x * this.speed * this.deltaTime;
+    var yMove = this.dir.y * this.speed * this.deltaTime;
+    this.pos.moveBy(xMove, yMove);
+    this.spawner.pos.moveTo(this.pos.x, this.pos.y);
+    this.spawnerTwo.pos.moveTo(this.pos.x, this.pos.y);
+    if (this.char.hpRate() < .50) {
+      this.state.transitionTo(PATTERN2);
+    }
+  }
+
+  public function pattern2() {
+    if (this.char.hpRate() <= 0) {
+      this.state.transitionTo(DEATH);
+    }
+  }
 
   public function processBoundingBox() {
     // Cannot go outside of Graphic.boxHeight/Width

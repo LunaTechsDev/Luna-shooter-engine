@@ -19,6 +19,10 @@ class XSpawner extends BulletSpawner {
 
   public override function spawnBullet(?deltaTime: Float) {
     if (this.fireCooldown <= 0) {
+      // TODO: Turn into a function
+      var spawnX = 10;
+      var spawnY = 10;
+      this.spawnPoint = { x: this.pos.x + spawnX, y: this.pos.y + spawnY };
       var bulletSize = 12;
       var bulletImg = new Bitmap(bulletSize, bulletSize);
       // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
