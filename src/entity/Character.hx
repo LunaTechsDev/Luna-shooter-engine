@@ -27,14 +27,23 @@ class Character extends Node2D {
     this.damageAnimTime = 0;
     this.charImg.addLoadListener((bitmap: Bitmap) -> {
       this.sprite = new Sprite(bitmap);
-      this.collider = new Collider(this.layer, this.pos.x, this.pos.y, bitmap.width, bitmap.height);
+      this.collider = new Collider(
+        this,
+        this.layer,
+        this.pos.x,
+        this.pos.y,
+        bitmap.width,
+        bitmap.height
+      );
       CollisionSystem.addCollider(this.collider);
       this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
       this.sprite.addChild(this.hpGauge);
     });
   }
 
-  public function takeDamage() {
+  public function takeDamage(damage: Int) {
+    // Should lower character hp based on damage taken
+    this.char.hp -= damage;
     this.damageAnimTime = Main.Params.damageFlashTime;
     this.damageAnim.start();
   }

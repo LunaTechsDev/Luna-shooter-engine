@@ -1,7 +1,7 @@
 package entity;
 
+import haxe.Timer;
 import rm.scenes.Scene_Base;
-import rm.managers.SceneManager;
 import rm.managers.ImageManager;
 import anim.Anim;
 import rm.core.Graphics;
@@ -19,7 +19,18 @@ enum abstract WKState(String) from String to String {
    */
   public var PATTERN1 = 'pattern1';
 
+  /**
+   * A new bullet spread is added on top of the regular
+   * one.
+   */
   public var PATTERN2 = 'pattern2';
+
+  /**
+   * Final Pattern before death, where the enemy
+   * increases the projectile speed.
+   */
+  public var PATTERN3 = 'pattern3';
+
   public var DEATH = 'death';
 }
 
@@ -38,7 +49,9 @@ class WhiteKnight extends entity.Enemy {
   }
 
   public override function initialize() {
+    trace(this);
     super.initialize();
+    trace(this.collider.parent, this.collider.x);
     // MoveTimer = 2.5;
     this.moveTimer = 2.5;
     this.dir = { x: 0, y: 0 };
@@ -64,6 +77,9 @@ class WhiteKnight extends entity.Enemy {
     var enter: String = ENTERSTATE;
     this.state.on(enter + IDLE, () -> {
       this.sprite.bitmap.fillRect(0, 0, 50, 50, 'blue');
+      Timer.delay(() -> {
+        this.state.transitionTo(PATTERN1);
+      }, 3000);
     });
 
     // Starting Pattern for normal hp
@@ -86,6 +102,21 @@ class WhiteKnight extends entity.Enemy {
     this.state.on(PATTERN2, () -> {
       this.pattern2();
     });
+
+    this.state.on(enter + PATTERN3, () -> {
+      this.spawnerTwo.bulletSpeed = 400;
+    });
+
+    this.state.on(PATTERN3, () -> {
+      this.pattern3();
+    });
+
+    this.state.on(enter + DEATH, () -> {
+      this.sprite.bitmap.fillRect(0, 0, 50, 50, 'gray');
+      this.spawner.stop();
+      this.spawnerTwo.stop();
+      // this.destroy();
+    });
   }
 
   public function createSpawners() {
@@ -93,10 +124,12 @@ class WhiteKnight extends entity.Enemy {
     var spawnerX = this.pos.x;
     var spawnerY = this.pos.y;
     enemyBullet.addLoadListener((bitmap) -> {
-      var spawner = new SpinningXSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
-      var secondSpawner = new XSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
+      var spawner = new XSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
+      var secondSpawner = new SpinningXSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
       this.spawner = spawner;
+      this.spawner.bulletAtk = this.char.atk;
       this.spawnerTwo = secondSpawner;
+      this.spawnerTwo.bulletAtk = this.char.atk;
     });
   }
 
@@ -136,6 +169,12 @@ class WhiteKnight extends entity.Enemy {
   }
 
   public function pattern2() {
+    if (this.char.hpRate() <= .20) {
+      this.state.transitionTo(PATTERN3);
+    }
+  }
+
+  public function pattern3() {
     if (this.char.hpRate() <= 0) {
       this.state.transitionTo(DEATH);
     }
@@ -152,9 +191,13 @@ class WhiteKnight extends entity.Enemy {
       switch (collision.layer) {
         case PLAYERBULLET:
           // Do something
-          this.takeDamage();
+          var bullet: Bullet = collision.parent;
+          if (bullet != null) {
+            this.takeDamage(bullet.atk);
+          }
+
         case PLAYER:
-          this.takeDamage();
+          this.takeDamage(0);
         case _:
           // Default do nothing
       }

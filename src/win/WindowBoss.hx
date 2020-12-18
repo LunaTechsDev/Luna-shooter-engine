@@ -20,12 +20,21 @@ class WindowBoss extends Window_Base {
     this.boss = boss;
   }
 
-  public function paint() {
-    if (this.contents != null) {
+  public override function update() {
+    super.update();
+    this.refresh();
+  }
+
+  public function refresh() {
+    if (this.contents != null && this.boss != null) {
       this.contents.clear();
-      this.paintName(0, 0);
-      this.paintHp(0, 12);
+      this.paint();
     }
+  }
+
+  public function paint() {
+    this.paintName(0, 0);
+    this.paintHp(0, 12);
   }
 
   public function paintName(x: Int, y: Int) {
@@ -33,7 +42,9 @@ class WindowBoss extends Window_Base {
   }
 
   public function paintHp(x: Int, y: Int) {
+    #if compileMV
     this.drawGauge(
+
       x,
       y,
       this.contentsWidth(),
@@ -41,5 +52,16 @@ class WindowBoss extends Window_Base {
       Main.Params.hpColor,
       Main.Params.hpColor
     );
+    #else
+    WindowExt.drawGauge(
+      this,
+      x,
+      y,
+      this.contentsWidth(),
+      boss.hpRate(),
+      Main.Params.hpColor,
+      Main.Params.hpColor
+    );
+    #end
   }
 }

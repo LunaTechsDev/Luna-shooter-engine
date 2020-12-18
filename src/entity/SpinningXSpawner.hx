@@ -24,8 +24,8 @@ class SpinningXSpawner extends XSpawner {
       var bottomRight = 315 + this.shootRotation;
       var angleList = [topRight, topLeft, bottomLeft, bottomRight];
       for (angle in angleList) {
-        var bullet = new Bullet(this.layer, cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
-        bullet.speed = 200;
+        var bullet = new Bullet(this.layer, this.bulletAtk, cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
+        bullet.speed = cast this.bulletSpeed;
         this.scene.addChild(bullet.sprite);
         this.bulletList.push(bullet);
         bullet.fire(createRotationVector(angle));

@@ -121,8 +121,6 @@ class SceneShooter extends Scene_Base {
     forestParallax.addLoadListener((bitmap) -> {
       this.backgroundParallax1 = new TilingSprite(bitmap);
       this.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
-      trace(this.backgroundParallax1);
-      trace('add parallax');
       this.addChildAt(this.backgroundParallax1, 1);
     });
   }
@@ -182,7 +180,14 @@ class SceneShooter extends Scene_Base {
   }
 
   public function updateBossWindow() {
-    if (this.bossWindow.boss == null) {}
+    if (this.bossWindow.boss == null && this.boss != null) {
+      this.bossWindow.setBoss(this.boss.char);
+      this.bossWindow.show();
+    }
+    if (this.boss != null) {
+      this.bossWindow.setBoss(this.boss.char);
+    }
+    this.bossWindow.update();
   }
 
   public function paint() {

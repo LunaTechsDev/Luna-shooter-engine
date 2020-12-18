@@ -111,7 +111,7 @@ class Player extends entity.Character {
         );
       });
       // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
-      var bullet = new Bullet(PLAYERBULLET, cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
+      var bullet = new Bullet(PLAYERBULLET, this.char.atk, cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
 
       var scene: Scene_Base = SceneManager.currentScene;
       scene.addChild(bullet.sprite);
@@ -170,9 +170,14 @@ class Player extends entity.Character {
       switch (collision.layer) {
         case ENEMYBULLET:
           // Do something
-          this.takeDamage();
+          var bullet: Bullet = collision.parent;
+          if (bullet != null) {
+            this.takeDamage(bullet.atk);
+          }
         case ENEMY:
-          this.takeDamage();
+          var character: entity.Character = collision.parent;
+          trace(character);
+          this.takeDamage(character.char.atk);
         case _:
           // Default do nothing
       }

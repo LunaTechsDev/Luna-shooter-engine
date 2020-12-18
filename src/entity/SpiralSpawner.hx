@@ -20,8 +20,8 @@ class SpiralSpawner extends BulletSpawner {
     // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
     var bitmap = this.bulletImg;
     bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, bulletSize, bulletSize);
-    var bullet = new Bullet(this.layer, cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
-    bullet.speed = 200;
+    var bullet = new Bullet(this.layer, this.bulletAtk, cast this.spawnPoint.x, cast this.spawnPoint.y, bulletImg);
+    bullet.speed = cast this.bulletSpeed;
     this.shootRotation += 15;
     this.scene.addChild(bullet.sprite);
     this.bulletList.push(bullet);

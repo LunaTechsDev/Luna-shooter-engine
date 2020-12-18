@@ -2,7 +2,7 @@
  *
  *  Luna_ShooterMV.js
  * 
- *  Build Date: 12/16/2020
+ *  Build Date: 12/17/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -301,6 +301,13 @@ SOFTWARE
   }
 
   SceneMap.__name__ = true;
+  class Std {
+    static string(s) {
+      return js_Boot.__string_rec(s, "");
+    }
+  }
+
+  Std.__name__ = true;
   class Anim extends PIXI.utils.EventEmitter {
     constructor(sprite, animFn) {
       super();
@@ -322,8 +329,9 @@ SOFTWARE
 
   Anim.__name__ = true;
   class core_Collider extends Rectangle {
-    constructor(layer, x, y, width, height) {
+    constructor(parent, layer, x, y, width, height) {
       super(x, y, width, height);
+      this.parent = parent;
       this.layer = layer;
       this.isOn = true;
       this.collisions = [];
@@ -409,8 +417,9 @@ SOFTWARE
 
   entity_Node2D.__name__ = true;
   class entity_Bullet extends entity_Node2D {
-    constructor(layer, posX, posY, bulletImage) {
+    constructor(layer, atk, posX, posY, bulletImage) {
       super(posX, posY);
+      this.atk = atk;
       this.layer = layer;
       this.bulletImage = bulletImage;
       this.initialize();
@@ -425,6 +434,7 @@ SOFTWARE
         _gthis.sprite.x = _gthis.pos.x;
         _gthis.sprite.y = _gthis.pos.y;
         _gthis.collider = new core_Collider(
+          _gthis,
           _gthis.layer,
           _gthis.pos.x,
           _gthis.pos.y,
@@ -485,11 +495,15 @@ SOFTWARE
   class entity_BulletSpawner extends entity_Node2D {
     constructor(layer, bulletImg, posX, posY) {
       super(posX, posY);
+      this.bulletSpeed = 200;
       this.layer = layer;
       this.bulletImg = bulletImg;
     }
     start() {
       this.isStarted = true;
+    }
+    stop() {
+      this.isStarted = false;
     }
     update(deltaTime) {
       if (this.isStarted) {
@@ -533,6 +547,7 @@ SOFTWARE
       this.charImg.addLoadListener(function (bitmap) {
         _gthis.sprite = new Sprite(bitmap);
         _gthis.collider = new core_Collider(
+          _gthis,
           _gthis.layer,
           _gthis.pos.x,
           _gthis.pos.y,
@@ -544,7 +559,8 @@ SOFTWARE
         _gthis.sprite.addChild(_gthis.hpGauge);
       });
     }
-    takeDamage() {
+    takeDamage(damage) {
+      this.char.hp -= damage;
       this.damageAnimTime = LunaShooter.Params.damageFlashTime;
       this.damageAnim.start();
     }
@@ -676,6 +692,7 @@ SOFTWARE
         });
         let bullet = new entity_Bullet(
           "playerBullet",
+          this.char.atk,
           this.pos.x,
           this.pos.y - 12,
           bulletImg
@@ -739,10 +756,20 @@ SOFTWARE
         ++_g;
         switch (collision.layer) {
           case "enemy":
-            this.takeDamage();
+            let character = collision.parent;
+            haxe_Log.trace(character, {
+              fileName: "src/entity/Player.hx",
+              lineNumber: 179,
+              className: "entity.Player",
+              methodName: "processCollision",
+            });
+            this.takeDamage(character.char.atk);
             break;
           case "enemyBullet":
-            this.takeDamage();
+            let bullet = collision.parent;
+            if (bullet != null) {
+              this.takeDamage(bullet.atk);
+            }
             break;
           default:
         }
@@ -778,11 +805,12 @@ SOFTWARE
           ++_g;
           let bullet = new entity_Bullet(
             this.layer,
+            this.bulletAtk,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
           );
-          bullet.speed = 200;
+          bullet.speed = this.bulletSpeed;
           this.scene.addChild(bullet.sprite);
           this.bulletList.push(bullet);
           bullet.fire(this.createRotationVector(angle));
@@ -822,15 +850,21 @@ SOFTWARE
           ++_g;
           let bullet = new entity_Bullet(
             this.layer,
+            this.bulletAtk,
             this.spawnPoint.x,
             this.spawnPoint.y,
             bulletImg
           );
-          bullet.speed = 200;
+          bullet.speed = this.bulletSpeed;
           this.scene.addChild(bullet.sprite);
           this.bulletList.push(bullet);
           bullet.fire(this.createRotationVector(angle));
-          console.log("src/entity/SpinningXSpawner.hx:32:", bullet.pos.y);
+          haxe_Log.trace(bullet.pos.y, {
+            fileName: "src/entity/SpinningXSpawner.hx",
+            lineNumber: 32,
+            className: "entity.SpinningXSpawner",
+            methodName: "spawnBullet",
+          });
         }
         this.shootRotation += 15;
         this.fireCooldown = 0.25;
@@ -848,7 +882,26 @@ SOFTWARE
       this.initialize();
     }
     initialize() {
+      haxe_Log.trace(this, {
+        fileName: "src/entity/WhiteKnight.hx",
+        lineNumber: 52,
+        className: "entity.WhiteKnight",
+        methodName: "initialize",
+      });
       super.initialize();
+      let _gthis = this;
+      haxe_Log.trace(
+        this.collider.parent == null
+          ? "null"
+          : Std.string(this.collider.parent),
+        {
+          fileName: "src/entity/WhiteKnight.hx",
+          lineNumber: 54,
+          className: "entity.WhiteKnight",
+          methodName: "initialize",
+          customParams: [this.collider.x],
+        }
+      );
       this.moveTimer = 2.5;
       this.dir = { x: 0, y: 0 };
       this.speed = 200;
@@ -856,7 +909,6 @@ SOFTWARE
       this.state = LNState.create("idle");
       this.setupStates();
       this.state.transitionTo("idle");
-      let _gthis = this;
       this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
         if (Graphics.frameCount % 30 == 0) {
           _gthis.sprite.visible = true;
@@ -872,6 +924,9 @@ SOFTWARE
       let _gthis = this;
       this.state.on("enterState" + "idle", function () {
         _gthis.sprite.bitmap.fillRect(0, 0, 50, 50, "blue");
+        haxe_Timer.delay(function () {
+          _gthis.state.transitionTo("pattern1");
+        }, 3000);
       });
       this.state.on("enterState" + "pattern1", function () {
         _gthis.dir.x = -1;
@@ -888,6 +943,17 @@ SOFTWARE
       this.state.on("pattern2", function () {
         _gthis.pattern2();
       });
+      this.state.on("enterState" + "pattern3", function () {
+        _gthis.spawnerTwo.bulletSpeed = 400;
+      });
+      this.state.on("pattern3", function () {
+        _gthis.pattern3();
+      });
+      this.state.on("enterState" + "death", function () {
+        _gthis.sprite.bitmap.fillRect(0, 0, 50, 50, "gray");
+        _gthis.spawner.stop();
+        _gthis.spawnerTwo.stop();
+      });
     }
     createSpawners() {
       let enemyBullet = ImageManager.loadPicture("enemy_bullet2full");
@@ -895,14 +961,14 @@ SOFTWARE
       let spawnerY = this.pos.y;
       let _gthis = this;
       enemyBullet.addLoadListener(function (bitmap) {
-        let spawner = new entity_SpinningXSpawner(
+        let spawner = new entity_XSpawner(
           "enemyBullet",
           _gthis.scene,
           bitmap,
           spawnerX,
           spawnerY
         );
-        let secondSpawner = new entity_XSpawner(
+        let secondSpawner = new entity_SpinningXSpawner(
           "enemyBullet",
           _gthis.scene,
           bitmap,
@@ -910,7 +976,9 @@ SOFTWARE
           spawnerY
         );
         _gthis.spawner = spawner;
+        _gthis.spawner.bulletAtk = _gthis.char.atk;
         _gthis.spawnerTwo = secondSpawner;
+        _gthis.spawnerTwo.bulletAtk = _gthis.char.atk;
       });
     }
     update(deltaTime) {
@@ -953,6 +1021,12 @@ SOFTWARE
     }
     pattern2() {
       let char = this.char;
+      if (char.hp / char.maxHp <= 0.2) {
+        this.state.transitionTo("pattern3");
+      }
+    }
+    pattern3() {
+      let char = this.char;
       if (char.hp / char.maxHp <= 0) {
         this.state.transitionTo("death");
       }
@@ -975,10 +1049,13 @@ SOFTWARE
         ++_g;
         switch (collision.layer) {
           case "player":
-            this.takeDamage();
+            this.takeDamage(0);
             break;
           case "playerBullet":
-            this.takeDamage();
+            let bullet = collision.parent;
+            if (bullet != null) {
+              this.takeDamage(bullet.atk);
+            }
             break;
           default:
         }
@@ -1004,6 +1081,59 @@ SOFTWARE
   }
 
   ext_BitmapExt.__name__ = true;
+  class haxe_Log {
+    static formatOutput(v, infos) {
+      let str = Std.string(v);
+      if (infos == null) {
+        return str;
+      }
+      let pstr = infos.fileName + ":" + infos.lineNumber;
+      if (infos.customParams != null) {
+        let _g = 0;
+        let _g1 = infos.customParams;
+        while (_g < _g1.length) {
+          let v = _g1[_g];
+          ++_g;
+          str += ", " + Std.string(v);
+        }
+      }
+      return pstr + ": " + str;
+    }
+    static trace(v, infos) {
+      let str = haxe_Log.formatOutput(v, infos);
+      if (typeof console != "undefined" && console.log != null) {
+        console.log(str);
+      }
+    }
+  }
+
+  haxe_Log.__name__ = true;
+  class haxe_Timer {
+    constructor(time_ms) {
+      let me = this;
+      this.id = setInterval(function () {
+        me.run();
+      }, time_ms);
+    }
+    stop() {
+      if (this.id == null) {
+        return;
+      }
+      clearInterval(this.id);
+      this.id = null;
+    }
+    run() {}
+    static delay(f, time_ms) {
+      let t = new haxe_Timer(time_ms);
+      t.run = function () {
+        t.stop();
+        f();
+      };
+      return t;
+    }
+  }
+
+  haxe_Timer.__name__ = true;
   class haxe_iterators_ArrayIterator {
     constructor(array) {
       this.current = 0;
@@ -1270,11 +1400,6 @@ SOFTWARE
       forestParallax.addLoadListener(function (bitmap) {
         _gthis.backgroundParallax1 = new TilingSprite(bitmap);
         _gthis.backgroundParallax1.move(0, 0, bitmap.width, bitmap.height);
-        console.log(
-          "src/scene/SceneShooter.hx:124:",
-          _gthis.backgroundParallax1
-        );
-        console.log("src/scene/SceneShooter.hx:125:", "add parallax");
         _gthis.addChildAt(_gthis.backgroundParallax1, 1);
       });
     }
@@ -1330,7 +1455,16 @@ SOFTWARE
         this.backgroundParallax1.origin.x -= 0.64;
       }
     }
-    updateBossWindow() {}
+    updateBossWindow() {
+      if (this.bossWindow.boss == null && this.boss != null) {
+        this.bossWindow.setBoss(this.boss.char);
+        this.bossWindow.show();
+      }
+      if (this.boss != null) {
+        this.bossWindow.setBoss(this.boss.char);
+      }
+      this.bossWindow.update();
+    }
     paint() {
       if (LunaShooter.Params.debugCollider) {
         this.paintColliders();
@@ -1421,6 +1555,38 @@ SOFTWARE
   class win_WindowBoss extends Window_Base {
     constructor(x, y, width, height) {
       super(x, y, width, height);
+    }
+    setBoss(boss) {
+      this.boss = boss;
+    }
+    update() {
+      super.update();
+      this.refresh();
+    }
+    refresh() {
+      if (this.contents != null && this.boss != null) {
+        this.contents.clear();
+        this.paint();
+      }
+    }
+    paint() {
+      this.paintName(0, 0);
+      this.paintHp(0, 12);
+    }
+    paintName(x, y) {
+      this.drawText(this.boss.name, x, y, this.contentsWidth(), "center");
+    }
+    paintHp(x, y) {
+      let tmp = this.contentsWidth();
+      let char = this.boss;
+      this.drawGauge(
+        x,
+        y,
+        tmp,
+        char.hp / char.maxHp,
+        LunaShooter.Params.hpColor,
+        LunaShooter.Params.hpColor
+      );
     }
   }
 

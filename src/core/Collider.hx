@@ -7,10 +7,12 @@ class Collider extends Rectangle {
   public var inCollission: Bool;
   public var layer: CollisionLayer;
   public var isOn: Bool;
+  public var parent: Any;
   public var collisions: Array<Collider>;
 
-  public function new(layer: CollisionLayer, x: Float, y: Float, width: Float, height: Float) {
+  public function new(parent: Any, layer: CollisionLayer, x: Float, y: Float, width: Float, height: Float) {
     super(x, y, width, height);
+    this.parent = parent;
     this.layer = layer;
     this.isOn = true;
     this.collisions = [];
