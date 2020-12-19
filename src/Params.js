@@ -10,6 +10,17 @@
 @desc Shows the colliders in the game when turned on.
 @default true
 
+@param playerBulletImage
+@text Player Bullet Image (Picture Folder)
+@desc The player bullet which is loaded from the pictures folder.
+@default player_bullet
+
+
+@param enemyBulletImage
+@text Enemy Bullet Image (Picture Folder)
+@desc The bullet image used for enemies on screen
+@default enemy_bullet
+
 @param hpColor
 @text  Hp Color
 @desc The color of the HP gauges(css color)

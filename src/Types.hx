@@ -1,5 +1,7 @@
 typedef Param = {
   public var backgroundPicture: String;
+  public var playerBulletImage: String;
+  public var enemyBulletImage: String;
   public var debugCollider: Bool;
   public var boostFactor: Float;
   public var boostCD: Float;

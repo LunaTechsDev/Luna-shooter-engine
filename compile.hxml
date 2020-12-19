@@ -40,5 +40,6 @@
 
 
 --cmd 'npx napkin'
---cmd haxe -D gamePath=../games/LunaTechsMZ --run CleanJs
+# --cmd haxe -D gamePath=../games/LunaTechsMZ --run CleanJs
+--cmd haxe -D gamePath=../games/ValentineProject --run CleanJs
 

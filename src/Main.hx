@@ -23,6 +23,8 @@ class Main {
     var params = plugin.parameters;
     Params = {
       backgroundPicture: params['backgroundPicture'],
+      playerBulletImage: params['playerBulletImage'],
+      enemyBulletImage: params['enemyBulletImage'],
       debugCollider: params['debugCollider'].toLowerCase() == 'true',
       hpColor: params['hpColor'],
       boostFactor: Fn.parseFloatJs(params['boostFactor']),
