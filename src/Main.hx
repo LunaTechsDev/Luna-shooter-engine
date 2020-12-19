@@ -25,6 +25,8 @@ class Main {
       backgroundPicture: params['backgroundPicture'],
       debugCollider: params['debugCollider'].toLowerCase() == 'true',
       hpColor: params['hpColor'],
+      boostFactor: Fn.parseFloatJs(params['boostFactor']),
+      boostCD: Fn.parseFloatJs(params['boostCD']),
       damageFlashTime: Fn.parseFloatJs(params['damageFlashTime'])
     }
 

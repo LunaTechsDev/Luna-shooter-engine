@@ -1,6 +1,8 @@
 typedef Param = {
   public var backgroundPicture: String;
   public var debugCollider: Bool;
+  public var boostFactor: Float;
+  public var boostCD: Float;
   public var hpColor: String;
   public var damageFlashTime: Float;
 }

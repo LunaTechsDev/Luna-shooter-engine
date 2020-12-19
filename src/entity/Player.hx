@@ -17,7 +17,7 @@ class Player extends entity.Character {
   public var dir: {x: Int, y: Int};
   public var playerImg: Bitmap;
   public var bulletList: Array<Bullet>;
-  public var initialBoostCD: Float;
+
   public var boosting: Bool;
   public var boostCD: Float;
   public var boostFactor: Float;
@@ -38,9 +38,9 @@ class Player extends entity.Character {
   public override function initialize() {
     super.initialize();
     this.bulletList = [];
-    this.initialBoostCD = 2.5;
-    this.boostCD = 2.5;
-    this.boostFactor = 0.5;
+
+    this.boostCD = Main.Params.boostCD;
+    this.boostFactor = Main.Params.boostFactor;
     this.initialSpeed = 400;
     this.speed = 400;
     this.dir = { x: 0, y: 0 };
@@ -156,10 +156,10 @@ class Player extends entity.Character {
   public function processBoosting(deltaTime: Float) {
     if (this.boosting && this.boostCD > 0) {
       this.speed = this.initialSpeed
-        + cast this.initialSpeed * (this.boostFactor * (this.boostCD / this.initialBoostCD));
+        + cast this.initialSpeed * (this.boostFactor * (this.boostCD / Main.Params.boostCD));
       this.boostCD -= deltaTime;
     } else {
-      this.boostCD = this.initialBoostCD;
+      this.boostCD = Main.Params.boostCD;
       this.boosting = false;
       this.speed = this.initialSpeed;
     }

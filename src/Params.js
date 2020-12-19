@@ -15,6 +15,16 @@
 @desc The color of the HP gauges(css color)
 @default B33951 
 
+@param boostFactor
+@text Boost Factor(seconds)
+@desc How much of the player speed is used when boosting
+@default 0.5
+
+@param boostCD
+@text Boost Cooldown(seconds)
+@desc The cooldown of the player boost
+@default 2.5
+
 @param damageFlashTime
 @text Damage Flash Time
 @desc The time enemies and players flash when taking damage(seconds)
