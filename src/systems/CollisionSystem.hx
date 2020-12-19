@@ -1,5 +1,6 @@
 package systems;
 
+import utils.Fn;
 import entity.Node2D;
 import core.Collider;
 
@@ -53,11 +54,9 @@ class CollisionSystem {
     });
   }
 
-  public static function processColliders() {}
-
   public static function updateColliderPos(collider: Collider) {
     var parent: Node2D = collider.parent;
-    if (parent != null) {
+    if (parent != null && Fn.hasProperty(parent, 'pos')) {
       collider.x = parent.pos.x;
       collider.y = parent.pos.y;
     }

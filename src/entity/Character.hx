@@ -1,5 +1,7 @@
 package entity;
 
+import systems.SpriteSystem;
+import spr.LNSprite;
 import anim.Anim;
 
 using ext.PositionExt;
@@ -8,7 +10,7 @@ using ext.CharacterExt;
 @:keep
 class Character extends Node2D {
   public var char: Types.Character;
-  public var sprite: Sprite;
+  public var sprite: LNSprite;
   public var charImg: Bitmap;
   public var speed: Int;
   public var takenDamage: Bool;
@@ -26,7 +28,7 @@ class Character extends Node2D {
   public override function initialize() {
     this.damageAnimTime = 0;
     this.charImg.addLoadListener((bitmap: Bitmap) -> {
-      this.sprite = new Sprite(bitmap);
+      this.sprite = new LNSprite(this, bitmap);
       this.collider = new Collider(
         this,
         this.layer,
@@ -35,6 +37,7 @@ class Character extends Node2D {
         bitmap.width,
         bitmap.height
       );
+      SpriteSystem.add(this.sprite);
       CollisionSystem.addCollider(this.collider);
       this.hpGauge = new SpriteGauge(0, 0, cast bitmap.width, 12);
       this.sprite.addChild(this.hpGauge);
@@ -54,8 +57,6 @@ class Character extends Node2D {
       this.processDamage(deltaTime);
     }
     this.processHp();
-    this.processCollider();
-    this.processSprite();
   }
 
   public function processDamage(deltaTime: Float) {
@@ -69,15 +70,5 @@ class Character extends Node2D {
 
   public function processHp() {
     this.hpGauge.updateGauge(this.char.hpRate());
-  }
-
-  public function processCollider() {
-    this.collider.x = this.pos.x;
-    this.collider.y = this.pos.y;
-  }
-
-  public function processSprite() {
-    this.sprite.x = this.pos.x;
-    this.sprite.y = this.pos.y;
   }
 }

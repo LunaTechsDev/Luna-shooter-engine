@@ -1,5 +1,6 @@
 package scene;
 
+import systems.SpriteSystem;
 import entity.WhiteKnight;
 import entity.BulletSpawner;
 import rm.core.TilingSprite;
@@ -155,6 +156,7 @@ class SceneShooter extends Scene_Base {
     this.updateParallax();
     this.updateBossWindow();
     CollisionSystem.update();
+    SpriteSystem.update();
     // this.spawner.update(this.deltaTime);
     // this.spawnerTwo.update(this.deltaTime);
     timeStamp = performance.now();

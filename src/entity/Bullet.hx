@@ -1,9 +1,11 @@
 package entity;
 
+import systems.SpriteSystem;
+import spr.LNSprite;
 import rm.core.Graphics;
 
 class Bullet extends Node2D {
-  public var sprite: Sprite;
+  public var sprite: LNSprite;
   public var layer: CollisionLayer;
   public var speed: Int;
   public var dir: {x: Int, y: Int};
@@ -25,7 +27,7 @@ class Bullet extends Node2D {
     this.speed = 200;
     this.dir = { x: 0, y: 0 };
     this.bulletImage.addLoadListener((bitmap) -> {
-      this.sprite = new Sprite(bitmap);
+      this.sprite = new LNSprite(this, bitmap);
       this.sprite.x = this.pos.x;
       this.sprite.y = this.pos.y;
       this.collider = new Collider(
@@ -36,6 +38,7 @@ class Bullet extends Node2D {
         bitmap.width,
         bitmap.height
       );
+      SpriteSystem.add(this.sprite);
       CollisionSystem.addCollider(this.collider);
     });
   }
@@ -48,8 +51,6 @@ class Bullet extends Node2D {
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
     this.processMovement(deltaTime);
-    this.processSprite();
-    this.processCollider();
     this.processDeletion();
   }
 
@@ -57,11 +58,6 @@ class Bullet extends Node2D {
     var xMove = this.dir.x * this.speed * deltaTime;
     var yMove = this.dir.y * this.speed * deltaTime;
     this.pos.moveBy(xMove, yMove);
-  }
-
-  public function processSprite() {
-    this.sprite.x = this.pos.x;
-    this.sprite.y = this.pos.y;
   }
 
   public function processDeletion() {
@@ -74,14 +70,10 @@ class Bullet extends Node2D {
     }
   }
 
-  public function processCollider() {
-    this.collider.x = this.pos.x;
-    this.collider.y = this.pos.y;
-  }
-
   public override function destroy() {
     super.destroy();
     CollisionSystem.removeCollider(this.collider);
+    SpriteSystem.remove(this.sprite);
     this.sprite.visible = false;
   }
 }
