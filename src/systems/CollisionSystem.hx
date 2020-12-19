@@ -1,5 +1,6 @@
 package systems;
 
+import entity.Node2D;
 import core.Collider;
 
 /**
@@ -45,29 +46,37 @@ class CollisionSystem {
   }
 
   public static function update() {
-    handleCollisions();
-    handleNonCollisions();
-  }
-
-  public static function handleCollisions() {
     colliders.iter((collider: Collider) -> {
-      // Iterate through each collider individually and get collision colliders
-      var otherCollisions = colliders.filter((collision) -> collider.isCollided(collision)
-        && collider.id != collision.id);
-      for (collision in otherCollisions) {
-        collider.addCollision(collision);
-      }
+      updateColliderPos(collider);
+      handleCollisions(collider);
+      handleNonCollisions(collider);
     });
   }
 
-  public static function handleNonCollisions() {
-    colliders.iter((collider: Collider) -> {
-      // Iterate through each collider individually and get collision colliders
-      var otherNonCollisions = colliders.filter((collision) -> !collider.isCollided(collision)
-        && collider.id != collision.id);
-      for (collision in otherNonCollisions) {
-        collider.removeCollision(collision);
-      }
-    });
+  public static function processColliders() {}
+
+  public static function updateColliderPos(collider: Collider) {
+    var parent: Node2D = collider.parent;
+    if (parent != null) {
+      collider.x = parent.pos.x;
+      collider.y = parent.pos.y;
+    }
+  }
+
+  public static function handleCollisions(collider: Collider) {
+    // Iterate through each collider individually and get collision colliders
+    var otherCollisions = colliders.filter((collision) -> collider.isCollided(collision) && collider.id != collision.id);
+    for (collision in otherCollisions) {
+      collider.addCollision(collision);
+    }
+  }
+
+  public static function handleNonCollisions(collider: Collider) {
+    // Iterate through each collider individually and get collision colliders
+    var otherNonCollisions = colliders.filter((collision) -> !collider.isCollided(collision)
+      && collider.id != collision.id);
+    for (collision in otherNonCollisions) {
+      collider.removeCollision(collision);
+    }
   }
 }
