@@ -52,7 +52,7 @@ class SceneShooter extends Scene_Base {
 
   public function createPlayer() {
     var playerData: Player = {
-      atk: 3,
+      atk: 1,
       def: 3,
       hp: 100,
       maxHp: 100,
@@ -82,7 +82,7 @@ class SceneShooter extends Scene_Base {
 
   public function createBoss() {
     var bossData: Enemy = {
-      atk: 5,
+      atk: 1,
       def: 2,
       hp: 200,
       maxHp: 200,

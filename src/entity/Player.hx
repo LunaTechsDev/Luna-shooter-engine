@@ -156,6 +156,7 @@ class Player extends entity.Character {
     } else {
       this.boostCD = this.initialBoostCD;
       this.boosting = false;
+      this.speed = this.initialSpeed;
     }
   }
 
