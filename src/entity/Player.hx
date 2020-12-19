@@ -21,6 +21,7 @@ class Player extends entity.Character {
   public var boosting: Bool;
   public var boostCD: Float;
   public var boostFactor: Float;
+  public var isDamaged: Bool;
   public var playerCoordTrail: Array<Position>;
 
   public function new(posX: Int, posY: Int, characterData: Character, playerImage: Bitmap) {
@@ -39,7 +40,7 @@ class Player extends entity.Character {
     this.bulletList = [];
     this.initialBoostCD = 2.5;
     this.boostCD = 2.5;
-    this.boostFactor = 0.125;
+    this.boostFactor = 0.5;
     this.initialSpeed = 400;
     this.speed = 400;
     this.dir = { x: 0, y: 0 };
@@ -53,6 +54,7 @@ class Player extends entity.Character {
     });
     this.damageAnim.on(STOP, (anim: Anim) -> {
       this.sprite.visible = true;
+      this.isDamaged = false;
     });
   }
 
@@ -64,7 +66,9 @@ class Player extends entity.Character {
     this.processBoosting(deltaTime);
     this.processCoordTrail();
     this.processBoundingBox();
-    this.processCollision();
+    if (!this.isDamaged) {
+      this.processCollision();
+    }
   }
 
   public function processBullets(deltaTime: Float) {
@@ -151,7 +155,8 @@ class Player extends entity.Character {
 
   public function processBoosting(deltaTime: Float) {
     if (this.boosting && this.boostCD > 0) {
-      this.speed = cast this.initialSpeed * (this.boostFactor * (this.boostCD / this.initialBoostCD));
+      this.speed = this.initialSpeed
+        + cast this.initialSpeed * (this.boostFactor * (this.boostCD / this.initialBoostCD));
       this.boostCD -= deltaTime;
     } else {
       this.boostCD = this.initialBoostCD;
@@ -174,11 +179,13 @@ class Player extends entity.Character {
           var bullet: Bullet = collision.parent;
           if (bullet != null) {
             this.takeDamage(bullet.atk);
+            this.isDamaged = true;
           }
         case ENEMY:
           var character: entity.Character = collision.parent;
           trace(character);
           this.takeDamage(character.char.atk);
+          this.isDamaged = true;
         case _:
           // Default do nothing
       }

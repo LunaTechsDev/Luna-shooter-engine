@@ -490,6 +490,7 @@ SOFTWARE
     destroy() {
       super.destroy();
       systems_CollisionSystem.removeCollider(this.collider);
+      systems_SpriteSystem.remove(this.sprite);
       this.sprite.visible = false;
     }
   }
@@ -614,7 +615,7 @@ SOFTWARE
       this.bulletList = [];
       this.initialBoostCD = 2.5;
       this.boostCD = 2.5;
-      this.boostFactor = 0.125;
+      this.boostFactor = 0.5;
       this.initialSpeed = 400;
       this.speed = 400;
       this.dir = { x: 0, y: 0 };
@@ -628,6 +629,7 @@ SOFTWARE
       });
       this.damageAnim.on("stop", function (anim) {
         _gthis.sprite.visible = true;
+        _gthis.isDamaged = false;
       });
     }
     update(deltaTime) {
@@ -638,7 +640,9 @@ SOFTWARE
       this.processBoosting(deltaTime);
       this.processCoordTrail();
       this.processBoundingBox();
-      this.processCollision();
+      if (!this.isDamaged) {
+        this.processCollision();
+      }
     }
     processBullets(deltaTime) {
       let _this = this.bulletList;
@@ -726,12 +730,14 @@ SOFTWARE
     processBoosting(deltaTime) {
       if (this.boosting && this.boostCD > 0) {
         this.speed =
+          this.initialSpeed +
           this.initialSpeed *
-          (this.boostFactor * (this.boostCD / this.initialBoostCD));
+            (this.boostFactor * (this.boostCD / this.initialBoostCD));
         this.boostCD -= deltaTime;
       } else {
         this.boostCD = this.initialBoostCD;
         this.boosting = false;
+        this.speed = this.initialSpeed;
       }
     }
     processBoundingBox() {
@@ -755,16 +761,18 @@ SOFTWARE
             let character = collision.parent;
             haxe_Log.trace(character, {
               fileName: "src/entity/Player.hx",
-              lineNumber: 179,
+              lineNumber: 186,
               className: "entity.Player",
               methodName: "processCollision",
             });
             this.takeDamage(character.char.atk);
+            this.isDamaged = true;
             break;
           case "enemyBullet":
             let bullet = collision.parent;
             if (bullet != null) {
               this.takeDamage(bullet.atk);
+              this.isDamaged = true;
             }
             break;
           default:
@@ -1336,7 +1344,7 @@ SOFTWARE
     }
     createPlayer() {
       let playerData = {
-        atk: 3,
+        atk: 1,
         def: 3,
         hp: 100,
         maxHp: 100,
@@ -1355,7 +1363,7 @@ SOFTWARE
     }
     createBoss() {
       let bossData = {
-        atk: 5,
+        atk: 1,
         def: 2,
         hp: 200,
         maxHp: 200,
@@ -1575,6 +1583,11 @@ SOFTWARE
     static add(sprite) {
       systems_SpriteSystem.sprites.push(sprite);
       sprite.id = systems_SpriteSystem.generateId();
+    }
+    static remove(sprite) {
+      systems_SpriteSystem.spriteIds[sprite.id] = null;
+      sprite.id = null;
+      HxOverrides.remove(systems_SpriteSystem.sprites, sprite);
     }
     static update() {
       Lambda.iter(systems_SpriteSystem.sprites, function (sprite) {
