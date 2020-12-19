@@ -6,6 +6,7 @@ class BulletSpawner extends Node2D {
   public var shootDirection: Position;
   public var shootRotation: Float;
   public var bulletList: Array<Bullet>;
+  public var timeScale: Float;
   public var bulletImg: Bitmap;
   public var bulletSpeed: Float;
   public var bulletAtk: Int;
@@ -13,6 +14,7 @@ class BulletSpawner extends Node2D {
 
   public function new(layer: CollisionLayer, bulletImg: Bitmap, posX: Float, posY: Float) {
     super(cast posX, cast posY);
+    this.timeScale = 1.0;
     this.bulletSpeed = 200;
     this.layer = layer;
     this.bulletImg = bulletImg;
@@ -28,8 +30,9 @@ class BulletSpawner extends Node2D {
 
   public override function update(?deltaTime: Float) {
     if (this.isStarted) {
-      this.spawnBullet(deltaTime);
-      this.processBullets(deltaTime);
+      var ts = (Main.timeScale * this.timeScale);
+      this.spawnBullet(deltaTime * ts);
+      this.processBullets(deltaTime * ts);
     }
   }
 
@@ -39,11 +42,15 @@ class BulletSpawner extends Node2D {
     this.bulletList = this.bulletList.filter((bullet) -> bullet.sprite.visible);
     this.bulletList.iter((bullet) -> {
       bullet.update(deltaTime);
-      if (bullet.sprite.visible == false) {
+      if (!bullet.sprite.visible) {
         this.scene.removeChild(bullet.sprite);
         // Assigning to null does nothing
         bullet = null;
       }
     });
+  }
+
+  public function setTimeScale(scale: Float) {
+    this.timeScale = scale;
   }
 }

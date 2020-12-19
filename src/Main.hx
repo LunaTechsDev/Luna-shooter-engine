@@ -16,6 +16,7 @@ class Main {
   public static var Params: Param = null;
   public static var listener: EventEmitter = Amaryllis.createEventEmitter();
   public static var collisionSys = CollisionSystem;
+  public static var timeScale: Float = 1.0;
 
   public static function main() {
     var plugin = Globals.Plugins.filter((plugin) -> ~/<LunaShooter>/ig.match(plugin.description))[0];
@@ -40,5 +41,13 @@ class Main {
 
   public static function startGameScene() {
     SceneManager.push(SceneShooter);
+  }
+
+  public static function setTimeScale(scale: Float) {
+    timeScale = scale;
+  }
+
+  public static function getTimeScale() {
+    return timeScale;
   }
 }
