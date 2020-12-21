@@ -51,6 +51,7 @@ class Bullet extends Node2D {
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
     this.processMovement(deltaTime);
+    this.processCollision();
     this.processDeletion();
   }
 
@@ -58,6 +59,36 @@ class Bullet extends Node2D {
     var xMove = this.dir.x * this.speed * deltaTime;
     var yMove = this.dir.y * this.speed * deltaTime;
     this.pos.moveBy(xMove, yMove);
+  }
+
+  public function processCollision() {
+    for (collision in this.collider.collisions) {
+      if (this.layer == PLAYERBULLET) {
+        this.handlePlayerBulletCollision(collision);
+      }
+
+      if (this.layer == ENEMYBULLET) {
+        this.handleEnemyBulletCollision(collision);
+      }
+    }
+  }
+
+  public function handlePlayerBulletCollision(collision: Collider) {
+    switch (collision.layer) {
+      case ENEMY:
+        this.destroy();
+      case _:
+        // Do nothing;
+    }
+  }
+
+  public function handleEnemyBulletCollision(collision: Collider) {
+    switch (collision.layer) {
+      case PLAYER:
+        this.destroy();
+      case _:
+        // Do nothing;
+    }
   }
 
   public function processDeletion() {
