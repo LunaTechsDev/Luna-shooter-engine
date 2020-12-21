@@ -44,7 +44,7 @@
 @desc The bullet image used for enemies on screen
 @default enemy_bullet
 
-@param enemeyBulletSpeed
+@param enemyBulletSpeed
 @text Enemy Bullet Speed
 @desc The speed at which enemy bullets will fly
 @default 150

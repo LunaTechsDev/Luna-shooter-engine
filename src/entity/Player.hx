@@ -1,5 +1,6 @@
 package entity;
 
+import rm.Globals;
 import rm.managers.ImageManager;
 import anim.Anim;
 import rm.scenes.Scene_Base;
@@ -174,19 +175,21 @@ class Player extends entity.Character {
         case ENEMYBULLET:
           // Do something
           var bullet: Bullet = collision.parent;
-          if (bullet != null) {
-            this.takeDamage(bullet.atk);
-            this.isDamaged = true;
-          }
+          this.takeDamage(bullet.atk);
         case ENEMY:
           var character: entity.Character = collision.parent;
-          trace(character);
+
           this.takeDamage(character.char.atk);
-          this.isDamaged = true;
         case _:
           // Default do nothing
       }
     }
+  }
+
+  override public function takeDamage(damage: Int) {
+    super.takeDamage(damage);
+    this.isDamaged = true;
+    Globals.GameScreen.startShake(2, 1, 20);
   }
 
   public override function destroy() {

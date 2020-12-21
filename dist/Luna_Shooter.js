@@ -2,7 +2,7 @@
  *
  *  Luna_Shooter.js
  * 
- *  Build Date: 12/19/2020
+ *  Build Date: 12/21/2020
  * 
  *  Made with LunaTea -- Haxe
  *
@@ -25,16 +25,40 @@
 @desc Shows the colliders in the game when turned on.
 @default true
 
+@param godMode
+@text God Mode
+@desc Whether the player will die or not in game
+@default false
+
+@param playerSpeed
+@text Player Speed
+@desc Player movement speed
+@default 350
+
 @param playerBulletImage
 @text Player Bullet Image (Picture Folder)
 @desc The player bullet which is loaded from the pictures folder.
 @default player_bullet
 
+@param playerBulletSpeed
+@text Player Bullet Speed
+@desc The speed at which player bullets will fly
+@default 400
+
+@param enemySpeed
+@text Enemy Speed
+@desc The speed for enemy boss
+@default 250
 
 @param enemyBulletImage
 @text Enemy Bullet Image (Picture Folder)
 @desc The bullet image used for enemies on screen
 @default enemy_bullet
+
+@param enemyBulletSpeed
+@text Enemy Bullet Speed
+@desc The speed at which enemy bullets will fly
+@default 150
 
 @param hpColor
 @text  Hp Color
@@ -267,17 +291,27 @@ SOFTWARE
       }
       let plugin = _g[0];
       let params = plugin.parameters;
-      let tmp = params["debugCollider"].toLowerCase() == "true";
-      let tmp1 = parseFloat(params["boostFactor"]);
-      let tmp2 = parseFloat(params["boostCD"]);
+      let tmp = parseInt(params["playerSpeed"], 10);
+      let tmp1 = parseInt(params["playerBulletSpeed"], 10);
+      let tmp2 = parseInt(params["enemySpeed"], 10);
+      let tmp3 = parseInt(params["enemyBulletSpeed"], 10);
+      let tmp4 = params["debugCollider"].toLowerCase() == "true";
+      let tmp5 = params["godMode"].toLowerCase() == "true";
+      let tmp6 = parseFloat(params["boostFactor"]);
+      let tmp7 = parseFloat(params["boostCD"]);
       LunaShooter.Params = {
         backgroundPicture: params["backgroundPicture"],
+        playerSpeed: tmp,
         playerBulletImage: params["playerBulletImage"],
+        playerBulletSpeed: tmp1,
+        enemySpeed: tmp2,
         enemyBulletImage: params["enemyBulletImage"],
-        debugCollider: tmp,
+        enemyBulletSpeed: tmp3,
+        debugCollider: tmp4,
+        godMode: tmp5,
         hpColor: params["hpColor"],
-        boostFactor: tmp1,
-        boostCD: tmp2,
+        boostFactor: tmp6,
+        boostCD: tmp7,
         damageFlashTime: parseFloat(params["damageFlashTime"]),
         pauseText: params["pauseText"],
       };
@@ -346,13 +380,6 @@ SOFTWARE
   }
 
   SceneMap.__name__ = true;
-  class Std {
-    static string(s) {
-      return js_Boot.__string_rec(s, "");
-    }
-  }
-
-  Std.__name__ = true;
   class Anim extends PIXI.utils.EventEmitter {
     constructor(sprite, animFn) {
       super();
@@ -648,8 +675,7 @@ SOFTWARE
       this.bulletList = [];
       this.boostCD = LunaShooter.Params.boostCD;
       this.boostFactor = LunaShooter.Params.boostFactor;
-      this.initialSpeed = 400;
-      this.speed = 400;
+      this.speed = LunaShooter.Params.playerSpeed;
       this.dir = { x: 0, y: 0 };
       let _gthis = this;
       this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
@@ -690,7 +716,7 @@ SOFTWARE
       this.bulletList = _g;
       Lambda.iter(this.bulletList, function (bullet) {
         bullet.update(deltaTime);
-        if (bullet.sprite.visible == false) {
+        if (!bullet.sprite.visible) {
           let scene = SceneManager._scene;
           scene.removeChild(bullet.sprite);
           bullet = null;
@@ -731,6 +757,7 @@ SOFTWARE
           this.pos.y - 12,
           bulletImg
         );
+        bullet.speed = LunaShooter.Params.playerBulletSpeed;
         let scene = SceneManager._scene;
         scene.addChild(bullet.sprite);
         this.bulletList.push(bullet);
@@ -762,16 +789,17 @@ SOFTWARE
       pos.y += yMove;
     }
     processBoosting(deltaTime) {
+      let defaultSpeed = LunaShooter.Params.playerSpeed;
       if (this.boosting && this.boostCD > 0) {
         this.speed =
-          this.initialSpeed +
-          this.initialSpeed *
+          defaultSpeed +
+          defaultSpeed *
             (this.boostFactor * (this.boostCD / LunaShooter.Params.boostCD));
         this.boostCD -= deltaTime;
       } else {
         this.boostCD = LunaShooter.Params.boostCD;
         this.boosting = false;
-        this.speed = this.initialSpeed;
+        this.speed = defaultSpeed;
       }
     }
     processBoundingBox() {
@@ -793,25 +821,20 @@ SOFTWARE
         switch (collision.layer) {
           case "enemy":
             let character = collision.parent;
-            haxe_Log.trace(character, {
-              fileName: "src/entity/Player.hx",
-              lineNumber: 186,
-              className: "entity.Player",
-              methodName: "processCollision",
-            });
             this.takeDamage(character.char.atk);
-            this.isDamaged = true;
             break;
           case "enemyBullet":
             let bullet = collision.parent;
-            if (bullet != null) {
-              this.takeDamage(bullet.atk);
-              this.isDamaged = true;
-            }
+            this.takeDamage(bullet.atk);
             break;
           default:
         }
       }
+    }
+    takeDamage(damage) {
+      super.takeDamage(damage);
+      this.isDamaged = true;
+      $gameScreen.startShake(2, 1, 20);
     }
     destroy() {
       super.destroy();
@@ -897,12 +920,6 @@ SOFTWARE
           this.scene.addChild(bullet.sprite);
           this.bulletList.push(bullet);
           bullet.fire(this.createRotationVector(angle));
-          haxe_Log.trace(bullet.pos.y, {
-            fileName: "src/entity/SpinningXSpawner.hx",
-            lineNumber: 32,
-            className: "entity.SpinningXSpawner",
-            methodName: "spawnBullet",
-          });
         }
         this.shootRotation += 15;
         this.fireCooldown = 0.25;
@@ -920,33 +937,15 @@ SOFTWARE
       this.initialize();
     }
     initialize() {
-      haxe_Log.trace(this, {
-        fileName: "src/entity/WhiteKnight.hx",
-        lineNumber: 52,
-        className: "entity.WhiteKnight",
-        methodName: "initialize",
-      });
       super.initialize();
-      let _gthis = this;
-      haxe_Log.trace(
-        this.collider.parent == null
-          ? "null"
-          : Std.string(this.collider.parent),
-        {
-          fileName: "src/entity/WhiteKnight.hx",
-          lineNumber: 54,
-          className: "entity.WhiteKnight",
-          methodName: "initialize",
-          customParams: [this.collider.x],
-        }
-      );
       this.moveTimer = 2.5;
       this.dir = { x: 0, y: 0 };
-      this.speed = 200;
+      this.speed = LunaShooter.Params.enemySpeed;
       this.createSpawners();
       this.state = LNState.create("idle");
       this.setupStates();
       this.state.transitionTo("idle");
+      let _gthis = this;
       this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
         if (Graphics.frameCount % 30 == 0) {
           _gthis.sprite.visible = true;
@@ -1017,8 +1016,10 @@ SOFTWARE
         );
         _gthis.spawner = spawner;
         _gthis.spawner.bulletAtk = _gthis.char.atk;
+        _gthis.spawner.bulletSpeed = LunaShooter.Params.enemyBulletSpeed;
         _gthis.spawnerTwo = secondSpawner;
         _gthis.spawnerTwo.bulletAtk = _gthis.char.atk;
+        _gthis.spawnerTwo.bulletSpeed = LunaShooter.Params.enemyBulletSpeed;
       });
     }
     update(deltaTime) {
@@ -1131,33 +1132,6 @@ SOFTWARE
   }
 
   ext_WindowExt.__name__ = true;
-  class haxe_Log {
-    static formatOutput(v, infos) {
-      let str = Std.string(v);
-      if (infos == null) {
-        return str;
-      }
-      let pstr = infos.fileName + ":" + infos.lineNumber;
-      if (infos.customParams != null) {
-        let _g = 0;
-        let _g1 = infos.customParams;
-        while (_g < _g1.length) {
-          let v = _g1[_g];
-          ++_g;
-          str += ", " + Std.string(v);
-        }
-      }
-      return pstr + ": " + str;
-    }
-    static trace(v, infos) {
-      let str = haxe_Log.formatOutput(v, infos);
-      if (typeof console != "undefined" && console.log != null) {
-        console.log(str);
-      }
-    }
-  }
-
-  haxe_Log.__name__ = true;
   class haxe_Timer {
     constructor(time_ms) {
       let me = this;
@@ -1404,14 +1378,15 @@ SOFTWARE
       let playerData = {
         atk: 1,
         def: 3,
-        hp: 100,
-        maxHp: 100,
+        hp: 3,
+        maxHp: 3,
         isPlayer: true,
         name: "Koizumi",
       };
-      let playerImage = new Bitmap(100, 100);
-      playerImage.fillRect(0, 0, 100, 100, "white");
-      let player = new entity_Player(100, 100, playerData, playerImage);
+      let centerX = Graphics.boxWidth / 2;
+      let playerImage = new Bitmap(48, 48);
+      playerImage.fillRect(0, 0, 48, 48, "white");
+      let player = new entity_Player(centerX, 400, playerData, playerImage);
       this.player = player;
       this.addChild(player.sprite);
       this.scriptables.push(player);

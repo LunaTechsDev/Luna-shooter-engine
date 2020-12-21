@@ -55,14 +55,16 @@ class SceneShooter extends Scene_Base {
     var playerData: Player = {
       atk: 1,
       def: 3,
-      hp: 100,
-      maxHp: 100,
+      hp: 3,
+      maxHp: 3,
       isPlayer: true,
       name: 'Koizumi'
     };
-    var playerImage = new Bitmap(100, 100);
-    playerImage.fillRect(0, 0, 100, 100, 'white');
-    var player = new entity.Player(100, 100, playerData, playerImage);
+    var centerX = Graphics.boxWidth / 2;
+    var playerSize = 48;
+    var playerImage = new Bitmap(playerSize, playerSize);
+    playerImage.fillRect(0, 0, playerSize, playerSize, 'white');
+    var player = new entity.Player(cast centerX, 400, playerData, playerImage);
     this.player = player;
     this.addChild(player.sprite);
     this.scriptables.push(player);

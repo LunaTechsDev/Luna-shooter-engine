@@ -49,9 +49,8 @@ class WhiteKnight extends entity.Enemy {
   }
 
   public override function initialize() {
-    trace(this);
     super.initialize();
-    trace(this.collider.parent, this.collider.x);
+
     // MoveTimer = 2.5;
     this.moveTimer = 2.5;
     this.dir = { x: 0, y: 0 };

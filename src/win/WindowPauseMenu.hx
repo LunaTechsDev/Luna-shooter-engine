@@ -25,6 +25,7 @@ class WindowPauseMenu extends Window_Command {
   public override function makeCommandList() {
     super.makeCommandList();
     this.addCommand('Resume', 'resume', true);
+    this.addCommand('Retry', 'retry', true);
     this.addCommand('Return To Title', 'returnToTitle', true);
   }
 }
