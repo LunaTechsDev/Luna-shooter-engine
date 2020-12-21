@@ -23,13 +23,19 @@ class Main {
     var params = plugin.parameters;
     Params = {
       backgroundPicture: params['backgroundPicture'],
+      playerSpeed: Fn.parseIntJs(params['playerSpeed']),
       playerBulletImage: params['playerBulletImage'],
+      playerBulletSpeed: Fn.parseIntJs(params['playerBulletSpeed']),
+      enemySpeed: Fn.parseIntJs(params['enemySpeed']),
       enemyBulletImage: params['enemyBulletImage'],
+      enemyBulletSpeed: Fn.parseIntJs(params['enemyBulletSpeed']),
       debugCollider: params['debugCollider'].toLowerCase() == 'true',
+      godMode: params['godMode'].toLowerCase() == 'true',
       hpColor: params['hpColor'],
       boostFactor: Fn.parseFloatJs(params['boostFactor']),
       boostCD: Fn.parseFloatJs(params['boostCD']),
-      damageFlashTime: Fn.parseFloatJs(params['damageFlashTime'])
+      damageFlashTime: Fn.parseFloatJs(params['damageFlashTime']),
+      pauseText: params['pauseText']
     }
 
     Comment.title('Scene_Map');

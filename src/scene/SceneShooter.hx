@@ -19,8 +19,9 @@ import rm.scenes.Scene_Base;
 
 using ext.BitmapExt;
 
-@:native('LunaSceneShooter')
 @:expose
+@:keep
+@:native('LunaSceneShooter')
 class SceneShooter extends Scene_Base {
   public var timeStamp: Float;
   public var deltaTime: Float;
@@ -231,5 +232,11 @@ class SceneShooter extends Scene_Base {
         - borderWidth * 2, collider.height
         - borderWidth * 2);
     });
+  }
+
+  public override function terminate() {
+    super.terminate();
+    CollisionSystem.clear();
+    SpriteSystem.clear();
   }
 }

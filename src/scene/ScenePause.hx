@@ -16,6 +16,7 @@ class ScenePause extends Scene_MenuBase {
   public var pauseConfirmWindow: WindowConfirmMenu;
 
   public override function create() {
+    this.createWindowLayer();
     this.createAllWindows();
   }
 
@@ -26,13 +27,19 @@ class ScenePause extends Scene_MenuBase {
   }
 
   public function createTitle() {
-    this.pauseTitleWindow = new WindowTitle(0, 70, 125, 75);
+    var width = 175;
+    var centerX = (Graphics.boxWidth / 2) - (width / 2);
+    this.pauseTitleWindow = new WindowTitle(cast centerX, 70, width, 75);
     this.addWindow(this.pauseTitleWindow);
+    this.pauseTitleWindow.setTitle(Main.Params.pauseText);
   }
 
   public function createPauseWindow() {
-    var xPosition = Graphics.boxWidth / 2;
-    this.pauseMenuWindow = new WindowPauseMenu(cast xPosition, 120, 150, 250);
+    var width = 150;
+    var xPosition = (Graphics.boxWidth / 2) - (width / 2);
+    this.pauseMenuWindow = new WindowPauseMenu(cast xPosition, cast this.pauseTitleWindow.y
+      + this.pauseTitleWindow.height
+      + 30, width, 250);
     this.pauseMenuWindow.setHandler('resume', untyped this.resumeHandler);
     this.pauseMenuWindow.setHandler('retry', untyped this.retryHandler);
     this.pauseMenuWindow.setHandler('returnToTitle', untyped this.returnToTitleHandler);
@@ -45,6 +52,7 @@ class ScenePause extends Scene_MenuBase {
     this.pauseConfirmWindow = new WindowConfirmMenu(cast win.x, cast win.y, 150, 75);
     this.pauseConfirmWindow.setHandler('yes', untyped this.yesHandler);
     this.pauseConfirmWindow.setHandler('no', untyped this.noHandler);
+    this.pauseConfirmWindow.hide();
     this.pauseConfirmWindow.close();
     this.addWindow(this.pauseConfirmWindow);
   }
@@ -62,6 +70,7 @@ class ScenePause extends Scene_MenuBase {
   }
 
   public function returnToTitleHandler() {
+    this.pauseConfirmWindow.show();
     this.pauseConfirmWindow.open();
     this.pauseConfirmWindow.activate();
   }
@@ -73,5 +82,6 @@ class ScenePause extends Scene_MenuBase {
   public function noHandler() {
     this.pauseConfirmWindow.close();
     this.pauseConfirmWindow.deactivate();
+    this.pauseMenuWindow.activate();
   }
 }

@@ -18,6 +18,7 @@ class WindowTitle extends Window_Base {
 
   public function setTitle(text: String) {
     this.text = text;
+    this.paint();
   }
 
   public function paint() {

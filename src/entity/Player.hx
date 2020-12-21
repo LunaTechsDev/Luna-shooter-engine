@@ -13,11 +13,9 @@ using ext.CharacterExt;
 
 class Player extends entity.Character {
   public var player: Character;
-  public var initialSpeed: Int;
   public var dir: {x: Int, y: Int};
   public var playerImg: Bitmap;
   public var bulletList: Array<Bullet>;
-
   public var boosting: Bool;
   public var boostCD: Float;
   public var boostFactor: Float;
@@ -38,11 +36,9 @@ class Player extends entity.Character {
   public override function initialize() {
     super.initialize();
     this.bulletList = [];
-
     this.boostCD = Main.Params.boostCD;
     this.boostFactor = Main.Params.boostFactor;
-    this.initialSpeed = 400;
-    this.speed = 400;
+    this.speed = Main.Params.playerSpeed;
     this.dir = { x: 0, y: 0 };
 
     this.damageAnim = new Anim(this.sprite, (sprite, dt) -> {
@@ -75,7 +71,7 @@ class Player extends entity.Character {
     this.bulletList = this.bulletList.filter((bullet) -> bullet.sprite.visible);
     this.bulletList.iter((bullet) -> {
       bullet.update(deltaTime);
-      if (bullet.sprite.visible == false) {
+      if (!bullet.sprite.visible) {
         var scene: Scene_Base = SceneManager.currentScene;
         scene.removeChild(bullet.sprite);
         // Assigning to null does nothing
@@ -100,7 +96,7 @@ class Player extends entity.Character {
       var yOffset = 12;
       var bulletSize = 24;
       var bulletImg = new Bitmap(bulletSize, bulletSize);
-      var playerBullet = ImageManager.loadPicture('player_bullet');
+      var playerBullet = ImageManager.loadPicture(Main.Params.playerBulletImage);
       playerBullet.addLoadListener((bitmap) -> {
         bulletImg.blt(
           bitmap,
@@ -116,6 +112,7 @@ class Player extends entity.Character {
       });
       // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
       var bullet = new Bullet(PLAYERBULLET, this.char.atk, cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
+      bullet.speed = Main.Params.playerBulletSpeed;
 
       var scene: Scene_Base = SceneManager.currentScene;
       scene.addChild(bullet.sprite);
@@ -154,14 +151,14 @@ class Player extends entity.Character {
   }
 
   public function processBoosting(deltaTime: Float) {
+    var defaultSpeed = Main.Params.playerSpeed;
     if (this.boosting && this.boostCD > 0) {
-      this.speed = this.initialSpeed
-        + cast this.initialSpeed * (this.boostFactor * (this.boostCD / Main.Params.boostCD));
+      this.speed = defaultSpeed + cast defaultSpeed * (this.boostFactor * (this.boostCD / Main.Params.boostCD));
       this.boostCD -= deltaTime;
     } else {
       this.boostCD = Main.Params.boostCD;
       this.boosting = false;
-      this.speed = this.initialSpeed;
+      this.speed = defaultSpeed;
     }
   }
 

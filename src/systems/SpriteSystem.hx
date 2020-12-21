@@ -10,6 +10,8 @@ import entity.Node2D;
  * internally by the individually entity
  * with the collider.
  */
+@:keep
+@:native('SpriteSystem')
 class SpriteSystem {
   public static var sprites: Array<LNSprite> = [];
   public static var spriteIds: Array<Int> = [];
@@ -58,5 +60,10 @@ class SpriteSystem {
       sprite.x = parent.pos.x;
       sprite.y = parent.pos.y;
     }
+  }
+
+  public static function clear() {
+    spriteIds = [];
+    sprites = [];
   }
 }

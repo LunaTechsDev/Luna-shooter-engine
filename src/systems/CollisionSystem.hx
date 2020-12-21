@@ -10,6 +10,8 @@ import core.Collider;
  * internally by the individually entity
  * with the collider.
  */
+@:keep
+@:native('CollisionSystem')
 class CollisionSystem {
   public static var colliders: Array<Collider> = [];
   public static var colliderIds: Array<Int> = [];
@@ -77,5 +79,10 @@ class CollisionSystem {
     for (collision in otherNonCollisions) {
       collider.removeCollision(collision);
     }
+  }
+
+  public static function clear() {
+    colliderIds = [];
+    colliders = [];
   }
 }

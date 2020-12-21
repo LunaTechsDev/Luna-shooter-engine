@@ -15,16 +15,41 @@
 
 @target MV MZ
 
+@param pauseText
+@text Pause Text
+@desc The text used for the pause scene
+@default Pause
 
 @param debugCollider
 @text Debug Collider
 @desc Shows the colliders in the game when turned on.
 @default true
 
+@param playerBulletImage
+@text Player Bullet Image (Picture Folder)
+@desc The player bullet which is loaded from the pictures folder.
+@default player_bullet
+
+
+@param enemyBulletImage
+@text Enemy Bullet Image (Picture Folder)
+@desc The bullet image used for enemies on screen
+@default enemy_bullet
+
 @param hpColor
 @text  Hp Color
 @desc The color of the HP gauges(css color)
-@default B33951 
+@default #B33951 
+
+@param boostFactor
+@text Boost Factor(seconds)
+@desc How much of the player speed is used when boosting
+@default 0.5
+
+@param boostCD
+@text Boost Cooldown(seconds)
+@desc The cooldown of the player boost
+@default 2.5
 
 @param damageFlashTime
 @text Damage Flash Time
@@ -143,42 +168,39 @@ SOFTWARE
   }
 
   Lambda.__name__ = true;
-  class systems_CollisionSystem {
+  class CollisionSystem {
     static initialize() {
-      systems_CollisionSystem.colliderIds.length = 100;
-      Lambda.iter(systems_CollisionSystem.colliderIds, function (el) {});
+      CollisionSystem.colliderIds.length = 100;
+      Lambda.iter(CollisionSystem.colliderIds, function (el) {});
     }
     static generateId() {
-      let id = Lambda.findIndex(
-        systems_CollisionSystem.colliderIds,
-        function (el) {
-          return el == null;
-        }
-      );
+      let id = Lambda.findIndex(CollisionSystem.colliderIds, function (el) {
+        return el == null;
+      });
       if (id == -1) {
-        systems_CollisionSystem.colliderIds.push(
-          systems_CollisionSystem.colliderIds.length + 1
+        CollisionSystem.colliderIds.push(
+          CollisionSystem.colliderIds.length + 1
         );
-        id = systems_CollisionSystem.colliderIds.length + 1;
+        id = CollisionSystem.colliderIds.length + 1;
       } else {
-        systems_CollisionSystem.colliderIds[id] = id;
+        CollisionSystem.colliderIds[id] = id;
       }
       return id;
     }
     static addCollider(collider) {
-      systems_CollisionSystem.colliders.push(collider);
-      collider.id = systems_CollisionSystem.generateId();
+      CollisionSystem.colliders.push(collider);
+      collider.id = CollisionSystem.generateId();
     }
     static removeCollider(collider) {
-      systems_CollisionSystem.colliderIds[collider.id] = null;
+      CollisionSystem.colliderIds[collider.id] = null;
       collider.id = null;
-      HxOverrides.remove(systems_CollisionSystem.colliders, collider);
+      HxOverrides.remove(CollisionSystem.colliders, collider);
     }
     static update() {
-      Lambda.iter(systems_CollisionSystem.colliders, function (collider) {
-        systems_CollisionSystem.updateColliderPos(collider);
-        systems_CollisionSystem.handleCollisions(collider);
-        systems_CollisionSystem.handleNonCollisions(collider);
+      Lambda.iter(CollisionSystem.colliders, function (collider) {
+        CollisionSystem.updateColliderPos(collider);
+        CollisionSystem.handleCollisions(collider);
+        CollisionSystem.handleNonCollisions(collider);
       });
     }
     static updateColliderPos(collider) {
@@ -189,7 +211,7 @@ SOFTWARE
       }
     }
     static handleCollisions(collider) {
-      let _this = systems_CollisionSystem.colliders;
+      let _this = CollisionSystem.colliders;
       let _g = [];
       let _g1 = 0;
       while (_g1 < _this.length) {
@@ -207,7 +229,7 @@ SOFTWARE
       }
     }
     static handleNonCollisions(collider) {
-      let _this = systems_CollisionSystem.colliders;
+      let _this = CollisionSystem.colliders;
       let _g = [];
       let _g1 = 0;
       while (_g1 < _this.length) {
@@ -224,9 +246,13 @@ SOFTWARE
         collider.removeCollision(collision);
       }
     }
+    static clear() {
+      CollisionSystem.colliderIds = [];
+      CollisionSystem.colliders = [];
+    }
   }
 
-  systems_CollisionSystem.__name__ = true;
+  CollisionSystem.__name__ = true;
   class LunaShooter {
     static main() {
       let _g = [];
@@ -242,11 +268,18 @@ SOFTWARE
       let plugin = _g[0];
       let params = plugin.parameters;
       let tmp = params["debugCollider"].toLowerCase() == "true";
+      let tmp1 = parseFloat(params["boostFactor"]);
+      let tmp2 = parseFloat(params["boostCD"]);
       LunaShooter.Params = {
         backgroundPicture: params["backgroundPicture"],
+        playerBulletImage: params["playerBulletImage"],
+        enemyBulletImage: params["enemyBulletImage"],
         debugCollider: tmp,
         hpColor: params["hpColor"],
+        boostFactor: tmp1,
+        boostCD: tmp2,
         damageFlashTime: parseFloat(params["damageFlashTime"]),
+        pauseText: params["pauseText"],
       };
 
       //=============================================================================
@@ -453,8 +486,8 @@ SOFTWARE
           bitmap.width,
           bitmap.height
         );
-        systems_SpriteSystem.add(_gthis.sprite);
-        systems_CollisionSystem.addCollider(_gthis.collider);
+        SpriteSystem.add(_gthis.sprite);
+        CollisionSystem.addCollider(_gthis.collider);
       });
     }
     fire(direction) {
@@ -489,8 +522,8 @@ SOFTWARE
     }
     destroy() {
       super.destroy();
-      systems_CollisionSystem.removeCollider(this.collider);
-      systems_SpriteSystem.remove(this.sprite);
+      CollisionSystem.removeCollider(this.collider);
+      SpriteSystem.remove(this.sprite);
       this.sprite.visible = false;
     }
   }
@@ -511,11 +544,11 @@ SOFTWARE
       this.isStarted = false;
     }
     update(deltaTime) {
+      let ts = LunaShooter.timeScale * this.timeScale;
       if (this.isStarted) {
-        let ts = LunaShooter.timeScale * this.timeScale;
         this.spawnBullet(deltaTime * ts);
-        this.processBullets(deltaTime * ts);
       }
+      this.processBullets(deltaTime * ts);
     }
     spawnBullet(deltaTime) {}
     processBullets(deltaTime) {
@@ -560,8 +593,8 @@ SOFTWARE
           bitmap.width,
           bitmap.height
         );
-        systems_SpriteSystem.add(_gthis.sprite);
-        systems_CollisionSystem.addCollider(_gthis.collider);
+        SpriteSystem.add(_gthis.sprite);
+        CollisionSystem.addCollider(_gthis.collider);
         _gthis.hpGauge = new spr_SpriteGauge(0, 0, bitmap.width, 12);
         _gthis.sprite.addChild(_gthis.hpGauge);
       });
@@ -613,9 +646,8 @@ SOFTWARE
     initialize() {
       super.initialize();
       this.bulletList = [];
-      this.initialBoostCD = 2.5;
-      this.boostCD = 2.5;
-      this.boostFactor = 0.5;
+      this.boostCD = LunaShooter.Params.boostCD;
+      this.boostFactor = LunaShooter.Params.boostFactor;
       this.initialSpeed = 400;
       this.speed = 400;
       this.dir = { x: 0, y: 0 };
@@ -676,7 +708,9 @@ SOFTWARE
       if (Input.isTriggered("ok")) {
         let bulletSize = 24;
         let bulletImg = new Bitmap(bulletSize, bulletSize);
-        let playerBullet = ImageManager.loadPicture("player_bullet");
+        let playerBullet = ImageManager.loadPicture(
+          LunaShooter.Params.playerBulletImage
+        );
         playerBullet.addLoadListener(function (bitmap) {
           bulletImg.blt(
             bitmap,
@@ -732,10 +766,10 @@ SOFTWARE
         this.speed =
           this.initialSpeed +
           this.initialSpeed *
-            (this.boostFactor * (this.boostCD / this.initialBoostCD));
+            (this.boostFactor * (this.boostCD / LunaShooter.Params.boostCD));
         this.boostCD -= deltaTime;
       } else {
-        this.boostCD = this.initialBoostCD;
+        this.boostCD = LunaShooter.Params.boostCD;
         this.boosting = false;
         this.speed = this.initialSpeed;
       }
@@ -960,7 +994,9 @@ SOFTWARE
       });
     }
     createSpawners() {
-      let enemyBullet = ImageManager.loadPicture("enemy_bullet2full");
+      let enemyBullet = ImageManager.loadPicture(
+        LunaShooter.Params.enemyBulletImage
+      );
       let spawnerX = this.pos.x;
       let spawnerY = this.pos.y;
       let _gthis = this;
@@ -1269,6 +1305,7 @@ SOFTWARE
       super();
     }
     create() {
+      this.createWindowLayer();
       this.createAllWindows();
     }
     createAllWindows() {
@@ -1277,12 +1314,20 @@ SOFTWARE
       this.createConfirmWindow();
     }
     createTitle() {
-      this.pauseTitleWindow = new LNSWindowTitle(0, 70, 125, 75);
+      let centerX = Graphics.boxWidth / 2 - 87.5;
+      this.pauseTitleWindow = new LNSWindowTitle(centerX, 70, 175, 75);
       this.addWindow(this.pauseTitleWindow);
+      this.pauseTitleWindow.setTitle(LunaShooter.Params.pauseText);
     }
     createPauseWindow() {
-      let xPosition = Graphics.boxWidth / 2;
-      this.pauseMenuWindow = new WindowPauseMenu(xPosition, 120, 150, 250);
+      let width = 150;
+      let xPosition = Graphics.boxWidth / 2 - width / 2;
+      this.pauseMenuWindow = new WindowPauseMenu(
+        xPosition,
+        this.pauseTitleWindow.y + this.pauseTitleWindow.height + 30,
+        width,
+        250
+      );
       this.pauseMenuWindow.setHandler(
         "resume",
         $bind(this, this.resumeHandler)
@@ -1300,6 +1345,7 @@ SOFTWARE
       this.pauseConfirmWindow = new LNWindowConfirmMenu(win.x, win.y, 150, 75);
       this.pauseConfirmWindow.setHandler("yes", $bind(this, this.yesHandler));
       this.pauseConfirmWindow.setHandler("no", $bind(this, this.noHandler));
+      this.pauseConfirmWindow.hide();
       this.pauseConfirmWindow.close();
       this.addWindow(this.pauseConfirmWindow);
     }
@@ -1313,6 +1359,7 @@ SOFTWARE
       SceneManager.goto(LunaSceneShooter);
     }
     returnToTitleHandler() {
+      this.pauseConfirmWindow.show();
       this.pauseConfirmWindow.open();
       this.pauseConfirmWindow.activate();
     }
@@ -1322,6 +1369,7 @@ SOFTWARE
     noHandler() {
       this.pauseConfirmWindow.close();
       this.pauseConfirmWindow.deactivate();
+      this.pauseMenuWindow.activate();
     }
   }
 
@@ -1335,7 +1383,7 @@ SOFTWARE
       super.initialize();
       this.timeStamp = LunaSceneShooter.performance.now();
       this.scriptables = [];
-      systems_CollisionSystem.initialize();
+      CollisionSystem.initialize();
       this.createScriptables();
     }
     createScriptables() {
@@ -1439,8 +1487,8 @@ SOFTWARE
       this.updateScriptables();
       this.updateParallax();
       this.updateBossWindow();
-      systems_CollisionSystem.update();
-      systems_SpriteSystem.update();
+      CollisionSystem.update();
+      SpriteSystem.update();
       this.timeStamp = LunaSceneShooter.performance.now();
       this.paint();
     }
@@ -1492,7 +1540,7 @@ SOFTWARE
       }
     }
     paintColliders() {
-      let colliders = systems_CollisionSystem.colliders;
+      let colliders = CollisionSystem.colliders;
       let bitmap = this.colliderDebugSprite.bitmap;
       bitmap.clear();
       Lambda.iter(colliders, function (collider) {
@@ -1520,6 +1568,11 @@ SOFTWARE
           collider.height - 4
         );
       });
+    }
+    terminate() {
+      super.terminate();
+      CollisionSystem.clear();
+      SpriteSystem.clear();
     }
   }
 
@@ -1565,33 +1618,35 @@ SOFTWARE
   }
 
   spr_SpriteGauge.__name__ = true;
-  class systems_SpriteSystem {
+  class SpriteSystem {
+    static initialize() {
+      SpriteSystem.spriteIds.length = 100;
+      Lambda.iter(SpriteSystem.spriteIds, function (el) {});
+    }
     static generateId() {
-      let id = Lambda.findIndex(systems_SpriteSystem.spriteIds, function (el) {
+      let id = Lambda.findIndex(SpriteSystem.spriteIds, function (el) {
         return el == null;
       });
       if (id == -1) {
-        systems_SpriteSystem.spriteIds.push(
-          systems_SpriteSystem.spriteIds.length + 1
-        );
-        id = systems_SpriteSystem.spriteIds.length + 1;
+        SpriteSystem.spriteIds.push(SpriteSystem.spriteIds.length + 1);
+        id = SpriteSystem.spriteIds.length + 1;
       } else {
-        systems_SpriteSystem.spriteIds[id] = id;
+        SpriteSystem.spriteIds[id] = id;
       }
       return id;
     }
     static add(sprite) {
-      systems_SpriteSystem.sprites.push(sprite);
-      sprite.id = systems_SpriteSystem.generateId();
+      SpriteSystem.sprites.push(sprite);
+      sprite.id = SpriteSystem.generateId();
     }
     static remove(sprite) {
-      systems_SpriteSystem.spriteIds[sprite.id] = null;
+      SpriteSystem.spriteIds[sprite.id] = null;
       sprite.id = null;
-      HxOverrides.remove(systems_SpriteSystem.sprites, sprite);
+      HxOverrides.remove(SpriteSystem.sprites, sprite);
     }
     static update() {
-      Lambda.iter(systems_SpriteSystem.sprites, function (sprite) {
-        systems_SpriteSystem.updateSpritePos(sprite);
+      Lambda.iter(SpriteSystem.sprites, function (sprite) {
+        SpriteSystem.updateSpritePos(sprite);
       });
     }
     static updateSpritePos(sprite) {
@@ -1601,9 +1656,13 @@ SOFTWARE
         sprite.y = parent.pos.y;
       }
     }
+    static clear() {
+      SpriteSystem.spriteIds = [];
+      SpriteSystem.sprites = [];
+    }
   }
 
-  systems_SpriteSystem.__name__ = true;
+  SpriteSystem.__name__ = true;
   class win_WindowBoss extends Window_Base {
     constructor(x, y, width, height) {
       super(x, y, width, height);
@@ -1651,6 +1710,12 @@ SOFTWARE
       this.addCommand("Yes", "yes", true);
       this.addCommand("No", "no", true);
     }
+    maxCols() {
+      return 2;
+    }
+    maxItems() {
+      return 2;
+    }
   }
 
   LNWindowConfirmMenu.__name__ = true;
@@ -1669,6 +1734,19 @@ SOFTWARE
   class LNSWindowTitle extends Window_Base {
     constructor(x, y, width, height) {
       super(x, y, width, height);
+    }
+    setTitle(text) {
+      this.text = text;
+      this.paint();
+    }
+    paint() {
+      if (this.contents != null) {
+        this.contents.clear();
+        this.paintTitle();
+      }
+    }
+    paintTitle() {
+      this.drawText(this.text, 0, 0, this.contentsWidth(), "center");
     }
   }
 
@@ -1701,14 +1779,14 @@ SOFTWARE
   String.__name__ = true;
   Array.__name__ = true;
   js_Boot.__toStr = {}.toString;
-  systems_CollisionSystem.colliders = [];
-  systems_CollisionSystem.colliderIds = [];
+  CollisionSystem.colliders = [];
+  CollisionSystem.colliderIds = [];
   LunaShooter.listener = new PIXI.utils.EventEmitter();
-  LunaShooter.collisionSys = systems_CollisionSystem;
+  LunaShooter.collisionSys = CollisionSystem;
   LunaShooter.timeScale = 1.0;
   LunaSceneShooter.performance = window.performance;
-  systems_SpriteSystem.sprites = [];
-  systems_SpriteSystem.spriteIds = [];
+  SpriteSystem.sprites = [];
+  SpriteSystem.spriteIds = [];
   LunaShooter.main();
 })(
   typeof exports != "undefined"

@@ -4,27 +4,55 @@
 
 @target MV MZ
 
+@param pauseText
+@text Pause Text
+@desc The text used for the pause scene
+@default Pause
 
 @param debugCollider
 @text Debug Collider
 @desc Shows the colliders in the game when turned on.
 @default true
 
+@param godMode
+@text God Mode
+@desc Whether the player will die or not in game
+@default false
+
+@param playerSpeed
+@text Player Speed
+@desc Player movement speed
+@default 350
+
 @param playerBulletImage
 @text Player Bullet Image (Picture Folder)
 @desc The player bullet which is loaded from the pictures folder.
 @default player_bullet
 
+@param playerBulletSpeed
+@text Player Bullet Speed
+@desc The speed at which player bullets will fly
+@default 400
+
+@param enemySpeed
+@text Enemy Speed
+@desc The speed for enemy boss
+@default 250
 
 @param enemyBulletImage
 @text Enemy Bullet Image (Picture Folder)
 @desc The bullet image used for enemies on screen
 @default enemy_bullet
 
+@param enemeyBulletSpeed
+@text Enemy Bullet Speed
+@desc The speed at which enemy bullets will fly
+@default 150
+
 @param hpColor
 @text  Hp Color
 @desc The color of the HP gauges(css color)
-@default B33951 
+@default #B33951 
 
 @param boostFactor
 @text Boost Factor(seconds)

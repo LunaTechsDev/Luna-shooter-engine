@@ -55,7 +55,7 @@ class WhiteKnight extends entity.Enemy {
     // MoveTimer = 2.5;
     this.moveTimer = 2.5;
     this.dir = { x: 0, y: 0 };
-    this.speed = 200;
+    this.speed = Main.Params.enemySpeed;
     this.createSpawners();
     this.state = State.create(IDLE);
     this.setupStates();
@@ -120,7 +120,7 @@ class WhiteKnight extends entity.Enemy {
   }
 
   public function createSpawners() {
-    var enemyBullet = ImageManager.loadPicture('enemy_bullet2full');
+    var enemyBullet = ImageManager.loadPicture(Main.Params.enemyBulletImage);
     var spawnerX = this.pos.x;
     var spawnerY = this.pos.y;
     enemyBullet.addLoadListener((bitmap) -> {
@@ -128,8 +128,10 @@ class WhiteKnight extends entity.Enemy {
       var secondSpawner = new SpinningXSpawner(ENEMYBULLET, this.scene, bitmap, cast spawnerX, cast spawnerY);
       this.spawner = spawner;
       this.spawner.bulletAtk = this.char.atk;
+      this.spawner.bulletSpeed = Main.Params.enemyBulletSpeed;
       this.spawnerTwo = secondSpawner;
       this.spawnerTwo.bulletAtk = this.char.atk;
+      this.spawnerTwo.bulletSpeed = Main.Params.enemyBulletSpeed;
     });
   }
 

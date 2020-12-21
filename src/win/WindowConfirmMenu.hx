@@ -18,4 +18,13 @@ class WindowConfirmMenu extends Window_HorzCommand {
     this.addCommand('Yes', 'yes', true);
     this.addCommand('No', 'no', true);
   }
+
+  @:keep
+  public override function maxCols() {
+    return 2;
+  }
+
+  public override function maxItems(): Float {
+    return 2;
+  }
 }

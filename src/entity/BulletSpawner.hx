@@ -29,11 +29,11 @@ class BulletSpawner extends Node2D {
   }
 
   public override function update(?deltaTime: Float) {
+    var ts = (Main.timeScale * this.timeScale);
     if (this.isStarted) {
-      var ts = (Main.timeScale * this.timeScale);
       this.spawnBullet(deltaTime * ts);
-      this.processBullets(deltaTime * ts);
     }
+    this.processBullets(deltaTime * ts);
   }
 
   public function spawnBullet(?deltaTime: Float) {}

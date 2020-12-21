@@ -1,12 +1,18 @@
 typedef Param = {
   public var backgroundPicture: String;
+  public var playerSpeed: Int;
   public var playerBulletImage: String;
+  public var playerBulletSpeed: Int;
+  public var enemySpeed: Int;
   public var enemyBulletImage: String;
+  public var enemyBulletSpeed: Int;
+  public var godMode: Bool;
   public var debugCollider: Bool;
   public var boostFactor: Float;
   public var boostCD: Float;
   public var hpColor: String;
   public var damageFlashTime: Float;
+  public var pauseText: String;
 }
 
 typedef Position = {
