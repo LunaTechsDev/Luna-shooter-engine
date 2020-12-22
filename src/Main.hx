@@ -25,6 +25,7 @@ class Main {
       backgroundPicture: params['backgroundPicture'],
       playerSpeed: Fn.parseIntJs(params['playerSpeed']),
       playerBulletImage: params['playerBulletImage'],
+      playerFiringCooldown: Fn.parseFloatJs(params['playerFiringCooldown']),
       playerBulletSpeed: Fn.parseIntJs(params['playerBulletSpeed']),
       enemySpeed: Fn.parseIntJs(params['enemySpeed']),
       enemyBulletImage: params['enemyBulletImage'],

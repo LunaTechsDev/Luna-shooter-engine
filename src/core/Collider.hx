@@ -21,7 +21,7 @@ class Collider extends Rectangle {
   public function isCollided(collider: Collider): Bool {
     var topLeft = { x: this.x, y: this.y };
     var bottomLeft = { x: this.x, y: this.y + this.height };
-    var topRight = { x: this.x + this.width, y: this.x };
+    var topRight = { x: this.x + this.width, y: this.y };
     var bottomRight = { x: this.x + this.width, y: this.y + this.height };
     return collider.contains(topLeft.x, topLeft.y)
       || collider.contains(bottomLeft.x, bottomLeft.y)

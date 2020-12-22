@@ -40,6 +40,11 @@
 @desc The player bullet which is loaded from the pictures folder.
 @default player_bullet
 
+@param playerFiringCooldown
+@text Player Firing Cooldown
+@desc Determines how fast the player fires bullets at the enemy
+@default 0.5
+
 @param playerBulletSpeed
 @text Player Bullet Speed
 @desc The speed at which player bullets will fly
@@ -219,6 +224,9 @@ SOFTWARE
       CollisionSystem.colliderIds[collider.id] = null;
       collider.id = null;
       HxOverrides.remove(CollisionSystem.colliders, collider);
+      Lambda.iter(CollisionSystem.colliders, function (otherColliders) {
+        HxOverrides.remove(otherColliders.collisions, collider);
+      });
     }
     static update() {
       Lambda.iter(CollisionSystem.colliders, function (collider) {
@@ -241,7 +249,10 @@ SOFTWARE
       while (_g1 < _this.length) {
         let v = _this[_g1];
         ++_g1;
-        if (collider.isCollided(v) && collider.id != v.id) {
+        if (
+          (collider.isCollided(v) || v.isCollided(collider)) &&
+          collider.id != v.id
+        ) {
           _g.push(v);
         }
       }
@@ -259,7 +270,10 @@ SOFTWARE
       while (_g1 < _this.length) {
         let v = _this[_g1];
         ++_g1;
-        if (!collider.isCollided(v) && collider.id != v.id) {
+        if (
+          (!collider.isCollided(v) || !v.isCollided(collider)) &&
+          collider.id != v.id
+        ) {
           _g.push(v);
         }
       }
@@ -276,6 +290,7 @@ SOFTWARE
     }
   }
 
+  $hx_exports["CollisionSystem"] = CollisionSystem;
   CollisionSystem.__name__ = true;
   class LunaShooter {
     static main() {
@@ -292,26 +307,28 @@ SOFTWARE
       let plugin = _g[0];
       let params = plugin.parameters;
       let tmp = parseInt(params["playerSpeed"], 10);
-      let tmp1 = parseInt(params["playerBulletSpeed"], 10);
-      let tmp2 = parseInt(params["enemySpeed"], 10);
-      let tmp3 = parseInt(params["enemyBulletSpeed"], 10);
-      let tmp4 = params["debugCollider"].toLowerCase() == "true";
-      let tmp5 = params["godMode"].toLowerCase() == "true";
-      let tmp6 = parseFloat(params["boostFactor"]);
-      let tmp7 = parseFloat(params["boostCD"]);
+      let tmp1 = parseFloat(params["playerFiringCooldown"]);
+      let tmp2 = parseInt(params["playerBulletSpeed"], 10);
+      let tmp3 = parseInt(params["enemySpeed"], 10);
+      let tmp4 = parseInt(params["enemyBulletSpeed"], 10);
+      let tmp5 = params["debugCollider"].toLowerCase() == "true";
+      let tmp6 = params["godMode"].toLowerCase() == "true";
+      let tmp7 = parseFloat(params["boostFactor"]);
+      let tmp8 = parseFloat(params["boostCD"]);
       LunaShooter.Params = {
         backgroundPicture: params["backgroundPicture"],
         playerSpeed: tmp,
         playerBulletImage: params["playerBulletImage"],
-        playerBulletSpeed: tmp1,
-        enemySpeed: tmp2,
+        playerFiringCooldown: tmp1,
+        playerBulletSpeed: tmp2,
+        enemySpeed: tmp3,
         enemyBulletImage: params["enemyBulletImage"],
-        enemyBulletSpeed: tmp3,
-        debugCollider: tmp4,
-        godMode: tmp5,
+        enemyBulletSpeed: tmp4,
+        debugCollider: tmp5,
+        godMode: tmp6,
         hpColor: params["hpColor"],
-        boostFactor: tmp6,
-        boostCD: tmp7,
+        boostFactor: tmp7,
+        boostCD: tmp8,
         damageFlashTime: parseFloat(params["damageFlashTime"]),
         pauseText: params["pauseText"],
       };
@@ -414,7 +431,7 @@ SOFTWARE
       let bottomLeft_x = this.x;
       let bottomLeft_y = this.y + this.height;
       let topRight_x = this.x + this.width;
-      let topRight_y = this.x;
+      let topRight_y = this.y;
       let bottomRight_x = this.x + this.width;
       let bottomRight_y = this.y + this.height;
       if (
@@ -676,6 +693,7 @@ SOFTWARE
       this.boostCD = LunaShooter.Params.boostCD;
       this.boostFactor = LunaShooter.Params.boostFactor;
       this.speed = LunaShooter.Params.playerSpeed;
+      this.firingCooldown = LunaShooter.Params.playerFiringCooldown;
       this.dir = { x: 0, y: 0 };
       let _gthis = this;
       this.damageAnim = new Anim(this.sprite, function (sprite, dt) {
@@ -693,7 +711,7 @@ SOFTWARE
     update(deltaTime) {
       super.update(deltaTime);
       this.processBullets(deltaTime);
-      this.processFiring();
+      this.processFiring(deltaTime);
       this.processMovement(deltaTime);
       this.processBoosting(deltaTime);
       this.processCoordTrail();
@@ -730,39 +748,53 @@ SOFTWARE
         this.playerCoordTrail.shift();
       }
     }
-    processFiring() {
-      if (Input.isTriggered("ok")) {
-        let bulletSize = 24;
-        let bulletImg = new Bitmap(bulletSize, bulletSize);
-        let playerBullet = ImageManager.loadPicture(
-          LunaShooter.Params.playerBulletImage
+    processFiring(deltaTime) {
+      if (Input.isPressed("ok") && this.firingCooldown <= 0) {
+        let bullet = this.createBullet(this.pos.x, this.pos.y - 12);
+        let secondBullet = this.createBullet(
+          this.pos.x + 24 + 4,
+          this.pos.y - 12
         );
-        playerBullet.addLoadListener(function (bitmap) {
-          bulletImg.blt(
-            bitmap,
-            0,
-            0,
-            bitmap.width,
-            bitmap.height,
-            0,
-            0,
-            bulletSize,
-            bulletSize
-          );
-        });
-        let bullet = new entity_Bullet(
-          "playerBullet",
-          this.char.atk,
-          this.pos.x,
-          this.pos.y - 12,
-          bulletImg
-        );
-        bullet.speed = LunaShooter.Params.playerBulletSpeed;
         let scene = SceneManager._scene;
         scene.addChild(bullet.sprite);
-        this.bulletList.push(bullet);
+        scene.addChild(secondBullet.sprite);
         bullet.fire({ x: 0, y: -1 });
+        secondBullet.fire({ x: 0, y: -1 });
+        this.firingCooldown = LunaShooter.Params.playerFiringCooldown;
       }
+      if (this.firingCooldown > 0) {
+        this.firingCooldown -= deltaTime;
+      }
+    }
+    createBullet(x, y) {
+      let bulletSize = 24;
+      let bulletImg = new Bitmap(bulletSize, bulletSize);
+      let playerBullet = ImageManager.loadPicture(
+        LunaShooter.Params.playerBulletImage
+      );
+      playerBullet.addLoadListener(function (bitmap) {
+        bulletImg.blt(
+          bitmap,
+          0,
+          0,
+          bitmap.width,
+          bitmap.height,
+          0,
+          0,
+          bulletSize,
+          bulletSize
+        );
+      });
+      let bullet = new entity_Bullet(
+        "playerBullet",
+        this.char.atk,
+        x,
+        y,
+        bulletImg
+      );
+      bullet.speed = LunaShooter.Params.playerBulletSpeed;
+      this.bulletList.push(bullet);
+      return bullet;
     }
     processMovement(deltaTime) {
       this.dir.x = 0;
@@ -826,6 +858,7 @@ SOFTWARE
           case "enemyBullet":
             let bullet = collision.parent;
             this.takeDamage(bullet.atk);
+            bullet.destroy();
             break;
           default:
         }
@@ -1094,9 +1127,8 @@ SOFTWARE
             break;
           case "playerBullet":
             let bullet = collision.parent;
-            if (bullet != null) {
-              this.takeDamage(bullet.atk);
-            }
+            this.takeDamage(bullet.atk);
+            bullet.destroy();
             break;
           default:
         }
@@ -1701,6 +1733,7 @@ SOFTWARE
     makeCommandList() {
       super.makeCommandList();
       this.addCommand("Resume", "resume", true);
+      this.addCommand("Retry", "retry", true);
       this.addCommand("Return To Title", "returnToTitle", true);
     }
   }

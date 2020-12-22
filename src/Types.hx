@@ -2,6 +2,7 @@ typedef Param = {
   public var backgroundPicture: String;
   public var playerSpeed: Int;
   public var playerBulletImage: String;
+  public var playerFiringCooldown: Float;
   public var playerBulletSpeed: Int;
   public var enemySpeed: Int;
   public var enemyBulletImage: String;

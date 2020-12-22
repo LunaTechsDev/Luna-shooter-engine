@@ -193,10 +193,8 @@ class WhiteKnight extends entity.Enemy {
         case PLAYERBULLET:
           // Do something
           var bullet: Bullet = collision.parent;
-          if (bullet != null) {
-            this.takeDamage(bullet.atk);
-          }
-
+          this.takeDamage(bullet.atk);
+          bullet.destroy();
         case PLAYER:
           this.takeDamage(0);
         case _:

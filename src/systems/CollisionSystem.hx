@@ -12,6 +12,7 @@ import core.Collider;
  */
 @:keep
 @:native('CollisionSystem')
+@:expose('CollisionSystem')
 class CollisionSystem {
   public static var colliders: Array<Collider> = [];
   public static var colliderIds: Array<Int> = [];
@@ -43,9 +44,14 @@ class CollisionSystem {
   public static function removeCollider(collider: Collider) {
     // Remove collider ID and set to null to prevent off screen elements
     // From affect collider ID list
+
     colliderIds[collider.id] = null;
     collider.id = null;
     colliders.remove(collider);
+    // Remove from all other colliders collision list
+    colliders.iter((otherColliders) -> {
+      otherColliders.collisions.remove(collider);
+    });
   }
 
   public static function update() {
@@ -66,7 +72,9 @@ class CollisionSystem {
 
   public static function handleCollisions(collider: Collider) {
     // Iterate through each collider individually and get collision colliders
-    var otherCollisions = colliders.filter((collision) -> collider.isCollided(collision) && collider.id != collision.id);
+    var otherCollisions = colliders.filter((collision) -> (collider.isCollided(collision)
+      || collision.isCollided(collider))
+      && collider.id != collision.id);
     for (collision in otherCollisions) {
       collider.addCollision(collision);
     }
@@ -74,7 +82,8 @@ class CollisionSystem {
 
   public static function handleNonCollisions(collider: Collider) {
     // Iterate through each collider individually and get collision colliders
-    var otherNonCollisions = colliders.filter((collision) -> !collider.isCollided(collision)
+    var otherNonCollisions = colliders.filter((collision) -> (!collider.isCollided(collision)
+      || !collision.isCollided(collider))
       && collider.id != collision.id);
     for (collision in otherNonCollisions) {
       collider.removeCollision(collision);

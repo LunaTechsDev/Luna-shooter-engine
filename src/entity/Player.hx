@@ -20,6 +20,7 @@ class Player extends entity.Character {
   public var boosting: Bool;
   public var boostCD: Float;
   public var boostFactor: Float;
+  public var firingCooldown: Float;
   public var isDamaged: Bool;
   public var playerCoordTrail: Array<Position>;
 
@@ -40,6 +41,7 @@ class Player extends entity.Character {
     this.boostCD = Main.Params.boostCD;
     this.boostFactor = Main.Params.boostFactor;
     this.speed = Main.Params.playerSpeed;
+    this.firingCooldown = Main.Params.playerFiringCooldown;
     this.dir = { x: 0, y: 0 };
 
     this.damageAnim = new Anim(this.sprite, (sprite, dt) -> {
@@ -58,7 +60,7 @@ class Player extends entity.Character {
   public override function update(?deltaTime: Float) {
     super.update(deltaTime);
     this.processBullets(deltaTime);
-    this.processFiring();
+    this.processFiring(deltaTime);
     this.processMovement(deltaTime);
     this.processBoosting(deltaTime);
     this.processCoordTrail();
@@ -92,35 +94,40 @@ class Player extends entity.Character {
     }
   }
 
-  public function processFiring() {
-    if (Input.isTriggered(OK)) {
+  public function processFiring(deltaTime: Float) {
+    if (Input.isPressed(OK) && this.firingCooldown <= 0) {
+      // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
       var yOffset = 12;
       var bulletSize = 24;
-      var bulletImg = new Bitmap(bulletSize, bulletSize);
-      var playerBullet = ImageManager.loadPicture(Main.Params.playerBulletImage);
-      playerBullet.addLoadListener((bitmap) -> {
-        bulletImg.blt(
-          bitmap,
-          0,
-          0,
-          bitmap.width,
-          bitmap.height,
-          0,
-          0,
-          bulletSize,
-          bulletSize
-        );
-      });
-      // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
-      var bullet = new Bullet(PLAYERBULLET, this.char.atk, cast this.pos.x, cast this.pos.y - yOffset, bulletImg);
-      bullet.speed = Main.Params.playerBulletSpeed;
+      var bullet = createBullet(this.pos.x, this.pos.y - yOffset);
+      var secondBullet = createBullet(this.pos.x + bulletSize + 4, this.pos.y - yOffset);
 
       var scene: Scene_Base = SceneManager.currentScene;
-      scene.addChild(bullet.sprite);
 
-      this.bulletList.push(bullet);
+      scene.addChild(bullet.sprite);
+      scene.addChild(secondBullet.sprite);
+
       bullet.fire({ x: 0, y: -1 });
+      secondBullet.fire({ x: 0, y: -1 });
+      this.firingCooldown = Main.Params.playerFiringCooldown;
     }
+    if (this.firingCooldown > 0) {
+      this.firingCooldown -= deltaTime;
+    }
+  }
+
+  public function createBullet(x: Float, y: Float) {
+    var bulletSize = 24;
+    var bulletImg = new Bitmap(bulletSize, bulletSize);
+    var playerBullet = ImageManager.loadPicture(Main.Params.playerBulletImage);
+    playerBullet.addLoadListener((bitmap) -> {
+      bulletImg.blt(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, bulletSize, bulletSize);
+    });
+    // bulletImg.fillRect(0, 0, bulletSize, bulletSize, 'white');
+    var bullet = new Bullet(PLAYERBULLET, this.char.atk, cast x, cast y, bulletImg);
+    bullet.speed = Main.Params.playerBulletSpeed;
+    this.bulletList.push(bullet);
+    return bullet;
   }
 
   public function processMovement(deltaTime: Float) {
@@ -176,6 +183,7 @@ class Player extends entity.Character {
           // Do something
           var bullet: Bullet = collision.parent;
           this.takeDamage(bullet.atk);
+          bullet.destroy();
         case ENEMY:
           var character: entity.Character = collision.parent;
 

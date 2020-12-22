@@ -29,6 +29,11 @@
 @desc The player bullet which is loaded from the pictures folder.
 @default player_bullet
 
+@param playerFiringCooldown
+@text Player Firing Cooldown
+@desc Determines how fast the player fires bullets at the enemy
+@default 0.5
+
 @param playerBulletSpeed
 @text Player Bullet Speed
 @desc The speed at which player bullets will fly
